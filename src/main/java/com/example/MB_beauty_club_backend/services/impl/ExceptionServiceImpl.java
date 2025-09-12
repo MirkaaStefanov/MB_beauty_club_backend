@@ -19,13 +19,13 @@ public class ExceptionServiceImpl implements ExceptionService {
     @Async
     public void log(ApiException apiException) {
         Exception exception = Exception.mapFromApiException(apiException);
-        exceptionRepository.save(exception);
+//        exceptionRepository.save(exception);
     }
 
     @Override
     @Async
     public void log(RuntimeException runtimeException, int statusCode) {
         Exception exception = Exception.mapFromRuntimeException(runtimeException, statusCode);
-        exceptionRepository.save(exception);
+//        exceptionRepository.save(exception);
     }
 }

@@ -43,16 +43,20 @@ public class ShoppingCartService {
         List<CartItem> cartItemList = cartItemRepository.findByShoppingCartAndDeletedFalse(shoppingCart);
         boolean ifProductIsInCart = false;
 
-        for (CartItem cartItem : cartItemList) {
-            if (cartItem.getProduct().equals(product)) {
-                if (cartItem.getQuantity() + quantity > product.getAvailableQuantity()) {
-                    throw new IllegalArgumentException("There is no that much quantity");
-                }
+
+        Optional<CartItem> optionalCartItem = cartItemRepository.findByProductAndShoppingCartAndDeletedFalse(product, shoppingCart);
+
+        if (optionalCartItem.isPresent()) {
+            CartItem cartItem = optionalCartItem.get();
+            if (cartItem.getQuantity() + quantity > product.getAvailableQuantity()) {
+                throw new IllegalArgumentException("There is no that much quantity");
+            } else {
                 cartItem.setQuantity(cartItem.getQuantity() + quantity);
+                cartItemRepository.save(cartItem);
                 ifProductIsInCart = true;
-                break;
             }
         }
+
         if (ifProductIsInCart == false) {
             if (quantity > product.getAvailableQuantity()) {
                 throw new IllegalArgumentException("There is no that much quantity");

@@ -9,6 +9,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,6 +45,8 @@ public class ProductService {
 
     public ProductDTO save(ProductDTO dto) {
         Product entity = mapper.map(dto, Product.class);
+        BigDecimal euroPrice = entity.getPrice().divide(new BigDecimal("1.95583"), 2, RoundingMode.HALF_UP);
+        entity.setEuroPrice(euroPrice);
         if (dto.getImage() != null) {
             entity.setImageData(Base64.getDecoder().decode(dto.getImage()));
         }
@@ -51,6 +55,8 @@ public class ProductService {
 
     public ProductDTO update(Long id, ProductDTO dto) {
         Product existing = repository.findByIdAndDeletedFalse(id).orElseThrow();
+        BigDecimal euroPrice = existing.getPrice().divide(new BigDecimal("1.95583"), 2, RoundingMode.HALF_UP);
+        existing.setEuroPrice(euroPrice);
         mapper.map(dto, existing);
         if (dto.getImage() != null) {
             existing.setImageData(Base64.getDecoder().decode(dto.getImage()));

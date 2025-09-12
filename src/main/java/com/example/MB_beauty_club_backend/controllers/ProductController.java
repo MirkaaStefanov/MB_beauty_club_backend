@@ -28,10 +28,10 @@ public class ProductController {
 
     @GetMapping
     public ResponseEntity<List<ProductDTO>> getAllProducts(
-            @RequestParam(required = false) Boolean available,
+            @RequestParam(required = false) Boolean forSale,
             @RequestParam(required = false) ProductCategory category,
             @RequestHeader(value = "Authorization", required = false) String auth) {
-        return ResponseEntity.ok(productService.findAll(available, category));
+        return ResponseEntity.ok(productService.findAll(forSale, category));
     }
 
     @GetMapping("/{id}")

@@ -21,6 +21,7 @@ public class ProductDTO {
 
     private Long id;
     private BigDecimal price;
+    private BigDecimal euroPrice;
     private int availableQuantity;
     private boolean deleted;
     private String name;

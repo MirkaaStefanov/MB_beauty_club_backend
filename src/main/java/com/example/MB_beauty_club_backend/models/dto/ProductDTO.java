@@ -1,5 +1,6 @@
 package com.example.MB_beauty_club_backend.models.dto;
 
+import com.example.MB_beauty_club_backend.enums.ProductCategory;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Lob;
@@ -26,7 +27,7 @@ public class ProductDTO {
     private String description;
     private boolean forSale;
     private String barcode;
-
+    private ProductCategory productCategory;
     private String image;
     @JsonIgnore
     private transient MultipartFile imageFile;

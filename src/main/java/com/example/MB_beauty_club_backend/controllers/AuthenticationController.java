@@ -78,14 +78,14 @@ public class AuthenticationController {
         return ResponseEntity.ok(authenticationResponse);
     }
 
-    @GetMapping("/me") // Retrieves current user information.
-    @RateLimiter(name = "sensitive_operations_rate_limiter")
-    public ResponseEntity<AuthenticationResponse> getMe(HttpServletRequest request) {
-        String jwtToken = (String) request.getAttribute(JwtAuthenticationFilter.JWT_KEY);
-        AuthenticationResponse authenticationResponse = authenticationService.me(jwtToken);
-
-        return ResponseEntity.ok(authenticationResponse);
-    }
+//    @GetMapping("/me") // Retrieves current user information.
+//    @RateLimiter(name = "sensitive_operations_rate_limiter")
+//    public ResponseEntity<AuthenticationResponse> getMe(HttpServletRequest request) {
+//        String jwtToken = (String) request.getAttribute(JwtAuthenticationFilter.JWT_KEY);
+//        AuthenticationResponse authenticationResponse = authenticationService.me(jwtToken);
+//
+//        return ResponseEntity.ok(authenticationResponse);
+//    }
 
     @PostMapping("/forgot-password") // Sends link to email so the user can change their password
     @RateLimiter(name = "sensitive_operations_rate_limiter")

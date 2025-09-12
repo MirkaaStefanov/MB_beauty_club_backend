@@ -1,20 +1,31 @@
 package com.example.MB_beauty_club_backend.config;
 
+
+import com.example.MB_beauty_club_backend.exceptions.user.UserNotFoundException;
+import com.example.MB_beauty_club_backend.models.baseEntity.BaseEntity;
+import com.example.MB_beauty_club_backend.models.dto.OrderDTO;
+import com.example.MB_beauty_club_backend.models.dto.ProductDTO;
+import com.example.MB_beauty_club_backend.models.dto.common.BaseDTO;
+import com.example.MB_beauty_club_backend.models.entity.Order;
+
+import com.example.MB_beauty_club_backend.models.entity.Product;
+import com.example.MB_beauty_club_backend.models.entity.User;
+
+import com.example.MB_beauty_club_backend.repositories.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.example.MB_beauty_club_backend.exceptions.user.UserNotFoundException;
-import com.example.MB_beauty_club_backend.models.baseEntity.BaseEntity;
-import com.example.MB_beauty_club_backend.models.dto.common.BaseDTO;
-import com.example.MB_beauty_club_backend.repositories.UserRepository;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
+import org.modelmapper.spi.MappingContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -24,6 +35,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.Base64;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Configuration class for defining beans related to application setup, such as ModelMapper, ObjectMapper,
@@ -36,33 +52,54 @@ import org.springframework.web.client.RestTemplate;
 public class ApplicationConfig {
     private final UserRepository repository;
 
+
     @Bean
+    @Primary
     public ModelMapper modelMapper() {
         ModelMapper modelMapper = new ModelMapper();
 
-        modelMapper
-                .getConfiguration()
-                .setPropertyCondition(context -> {
-                    if (
-                            !(context.getParent().getDestination() instanceof BaseEntity &&
-                                    context.getParent().getSource() instanceof BaseDTO)
-                    ) {
-                        return true;
-                    }
+        // Global configuration
+        configureGlobalSettings(modelMapper);
 
-                    String destinationProperty = context.getMapping().getLastDestinationProperty().getName();
-
-                    return !("id".equals(destinationProperty) ||
-                            "createdAt".equals(destinationProperty) ||
-                            "updatedAt".equals(destinationProperty) ||
-                            "deletedAt".equals(destinationProperty));
-                })
-                .setFieldMatchingEnabled(true)
-                .setFieldAccessLevel(org.modelmapper.config.Configuration.AccessLevel.PRIVATE)
-                .setMatchingStrategy(MatchingStrategies.STANDARD);
+        // Product-specific mappings
+        configureProductMappings(modelMapper);
 
         return modelMapper;
     }
+
+    private void configureGlobalSettings(ModelMapper modelMapper) {
+        modelMapper.getConfiguration()
+                .setPropertyCondition(context -> {
+                    if (context.getParent() != null &&
+                            context.getParent().getDestination() instanceof BaseEntity &&
+                            context.getParent().getSource() instanceof BaseDTO) {
+
+                        String destinationProperty = context.getMapping().getLastDestinationProperty().getName();
+                        return !("id".equals(destinationProperty) ||
+                                "createdAt".equals(destinationProperty) ||
+                                "updatedAt".equals(destinationProperty) ||
+                                "deletedAt".equals(destinationProperty));
+                    }
+                    return true;
+                })
+                .setFieldMatchingEnabled(true)
+                .setFieldAccessLevel(org.modelmapper.config.Configuration.AccessLevel.PRIVATE)
+                .setMatchingStrategy(MatchingStrategies.STRICT)
+                .setSkipNullEnabled(true)
+                .setAmbiguityIgnored(true);
+    }
+
+    private void configureProductMappings(ModelMapper modelMapper) {
+        Converter<byte[], String> toBase64 = context -> {
+            byte[] source = context.getSource();
+            return (source != null) ? Base64.getEncoder().encodeToString(source) : null;
+        };
+
+        modelMapper.createTypeMap(Product.class, ProductDTO.class)
+                .addMappings(mapper -> mapper.using(toBase64)
+                        .map(Product::getImageData, ProductDTO::setImage));
+    }
+
 
     @Bean
     public ObjectMapper objectMapper() {

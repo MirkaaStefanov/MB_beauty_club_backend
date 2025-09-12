@@ -2,6 +2,7 @@ package com.example.MB_beauty_club_backend.services;
 
 import com.example.MB_beauty_club_backend.models.dto.auth.AuthenticationRequest;
 import com.example.MB_beauty_club_backend.models.dto.auth.AuthenticationResponse;
+import com.example.MB_beauty_club_backend.models.dto.auth.PublicUserDTO;
 import com.example.MB_beauty_club_backend.models.dto.auth.RegisterRequest;
 import com.example.MB_beauty_club_backend.models.entity.User;
 
@@ -14,7 +15,7 @@ public interface AuthenticationService {
 
     AuthenticationResponse refreshToken(String refreshToken) throws IOException;
 
-    AuthenticationResponse me(
+    PublicUserDTO me(
             String jwtToken
     );
 

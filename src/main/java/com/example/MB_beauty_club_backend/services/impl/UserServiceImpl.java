@@ -10,7 +10,9 @@ import com.example.MB_beauty_club_backend.models.dto.auth.AdminUserDTO;
 import com.example.MB_beauty_club_backend.models.dto.auth.OAuth2UserInfoDTO;
 import com.example.MB_beauty_club_backend.models.dto.auth.PublicUserDTO;
 import com.example.MB_beauty_club_backend.models.dto.auth.RegisterRequest;
+import com.example.MB_beauty_club_backend.models.entity.ShoppingCart;
 import com.example.MB_beauty_club_backend.models.entity.User;
+import com.example.MB_beauty_club_backend.repositories.ShoppingCartRepository;
 import com.example.MB_beauty_club_backend.repositories.UserRepository;
 import com.example.MB_beauty_club_backend.services.UserService;
 import jakarta.validation.ConstraintViolationException;
@@ -30,6 +32,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
+    private final ShoppingCartRepository shoppingCartRepository;
 
     /**
      * Creates a new user based on the provided registration request.
@@ -52,7 +55,13 @@ public class UserServiceImpl implements UserService {
             user.setCreatedAt(LocalDateTime.now());
             user.setUpdatedAt(LocalDateTime.now());
             user.setEnabled(false);
-            return userRepository.save(user);
+
+            User savedUser =  userRepository.save(user);
+            ShoppingCart shoppingCart = new ShoppingCart();
+            shoppingCart.setUser(savedUser);
+            shoppingCartRepository.save(shoppingCart);
+
+            return savedUser;
         } catch (DataIntegrityViolationException exception) {
             throw new UserCreateException(true);
         } catch (ConstraintViolationException exception) {
@@ -144,6 +153,9 @@ public class UserServiceImpl implements UserService {
             }
 
             user = userRepository.save(buildUser(registerRequest));
+            ShoppingCart shoppingCart = new ShoppingCart();
+            shoppingCart.setUser(user);
+            shoppingCartRepository.save(shoppingCart);
         }
 
         return user;

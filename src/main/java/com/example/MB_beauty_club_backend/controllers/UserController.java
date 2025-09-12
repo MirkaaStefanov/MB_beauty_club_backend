@@ -4,6 +4,7 @@ import com.example.MB_beauty_club_backend.filters.JwtAuthenticationFilter;
 import com.example.MB_beauty_club_backend.models.dto.auth.AdminUserDTO;
 import com.example.MB_beauty_club_backend.models.dto.auth.PublicUserDTO;
 import com.example.MB_beauty_club_backend.services.UserService;
+import com.example.MB_beauty_club_backend.services.impl.security.AuthenticationServiceImpl;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -19,11 +20,17 @@ import java.util.UUID;
 @RequestMapping("/api/v1/users")
 public class UserController {
     private final UserService userService;
+    private final AuthenticationServiceImpl authenticationService;
 
     @GetMapping("/all")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<AdminUserDTO>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<PublicUserDTO> getMe(@RequestHeader("Authorization") String auth){
+        return ResponseEntity.ok(authenticationService.me(auth));
     }
 
     @GetMapping("/{id}/admin")
@@ -46,4 +53,6 @@ public class UserController {
         userService.deleteUserById(id, user);
         return ResponseEntity.ok().build();
     }
+
+
 }

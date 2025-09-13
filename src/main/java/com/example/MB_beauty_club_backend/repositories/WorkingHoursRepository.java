@@ -12,4 +12,6 @@ import java.util.Optional;
 public interface WorkingHoursRepository extends JpaRepository<WorkingHours, Long> {
 
     List<WorkingHours> findByWorker(Worker worker);
+
+    void deleteAllByWorker(Worker worker);
 }

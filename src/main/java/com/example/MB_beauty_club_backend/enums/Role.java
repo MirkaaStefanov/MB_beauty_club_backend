@@ -38,6 +38,14 @@ public enum Role {
                     USER_CREATE,
                     USER_DELETE
             )
+    ),
+    WORKER(
+            Set.of(
+                    USER_READ,
+                    USER_UPDATE,
+                    USER_CREATE,
+                    USER_DELETE
+            )
     );
 
     private final Set<Permission> permissions;

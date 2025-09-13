@@ -23,8 +23,7 @@ public class UserController {
     private final AuthenticationServiceImpl authenticationService;
 
     @GetMapping("/all")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<PublicUserDTO>> getAllUsers() {
+    public ResponseEntity<List<PublicUserDTO>> getAllUsers(@RequestHeader("Authorization") String auth) {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 

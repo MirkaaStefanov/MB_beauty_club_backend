@@ -7,6 +7,7 @@ import com.example.MB_beauty_club_backend.models.entity.User;
 import com.example.MB_beauty_club_backend.models.entity.Worker;
 import com.example.MB_beauty_club_backend.repositories.UserRepository;
 import com.example.MB_beauty_club_backend.repositories.WorkerRepository;
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.crossstore.ChangeSetPersister;
@@ -26,10 +27,13 @@ public class WorkerService {
     public WorkerDTO createWorker(UUID userId, WorkerCategory workerCategory) throws ChangeSetPersister.NotFoundException {
 
         User user = userRepository.findById(userId).orElseThrow(ChangeSetPersister.NotFoundException::new);
+
+        Worker optional = workerRepository.findByUser(user).orElseThrow(ValidationException::new);
+
         Worker worker = new Worker();
         worker.setWorkerCategory(workerCategory);
         worker.setUser(user);
-        worker.setName(user.getName() + user.getSurname());
+        worker.setName(user.getName());
         user.setRole(Role.WORKER);
         userRepository.save(user);
         return modelMapper.map(workerRepository.save(worker), WorkerDTO.class);

@@ -53,5 +53,10 @@ public class WorkerController {
         return ResponseEntity.ok(workerService.findByid(id));
     }
 
+    @GetMapping("/byCategory")
+    public ResponseEntity<List<WorkerDTO>> findById(@RequestParam WorkerCategory category, @RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException {
+        return ResponseEntity.ok(workerService.findByCategory(category));
+    }
+
 
 }

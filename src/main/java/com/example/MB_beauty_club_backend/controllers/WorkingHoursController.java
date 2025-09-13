@@ -24,8 +24,13 @@ public class WorkingHoursController {
     private final WorkingHoursService workingHoursService;
 
     @GetMapping
-    public ResponseEntity<List<WorkingHoursDTO>> getWorkingHours(@RequestHeader("Authorization") String auth) throws ChangeSetPersister.NotFoundException {
-        return ResponseEntity.ok(workingHoursService.findByWorkerId());
+    public ResponseEntity<List<WorkingHoursDTO>> getMyWorkingHours(@RequestHeader("Authorization") String auth) throws ChangeSetPersister.NotFoundException {
+        return ResponseEntity.ok(workingHoursService.findByAuthenticatedWorker());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<List<WorkingHoursDTO>> getWorkingHoursByWorkerId(@PathVariable Long id, @RequestHeader("Authorization") String auth) throws ChangeSetPersister.NotFoundException {
+        return ResponseEntity.ok(workingHoursService.findByWorkerId(id));
     }
 
     @PutMapping

@@ -58,13 +58,21 @@ public class VacationService {
                 .collect(Collectors.toList());
     }
 
-    public List<VacationDTO> findByWorker() throws ChangeSetPersister.NotFoundException {
+    public List<VacationDTO> findByAuthenticatedWorker() throws ChangeSetPersister.NotFoundException {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         User authenticatedUser = userRepository.findByEmail(email).orElseThrow(ChangeSetPersister.NotFoundException::new);
         Worker worker = workerRepository.findByUser(authenticatedUser).orElseThrow(ChangeSetPersister.NotFoundException::new);
 
+        return vacationRepository.findByWorker(worker).stream()
+                .map(vacation -> modelMapper.map(vacation, VacationDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    public List<VacationDTO> findByWorkerId(Long id) throws ChangeSetPersister.NotFoundException {
+
+        Worker worker = workerRepository.findById(id).orElseThrow(ChangeSetPersister.NotFoundException::new);
 
         return vacationRepository.findByWorker(worker).stream()
                 .map(vacation -> modelMapper.map(vacation, VacationDTO.class))

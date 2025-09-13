@@ -25,7 +25,12 @@ public class VacationsController {
 
     @GetMapping
     public ResponseEntity<List<VacationDTO>> getMyVacations(@RequestHeader("Authorization") String auth) throws ChangeSetPersister.NotFoundException {
-        return ResponseEntity.ok(vacationService.findByWorker());
+        return ResponseEntity.ok(vacationService.findByAuthenticatedWorker());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<List<VacationDTO>> getVacationsByWorkerId(@PathVariable Long id, @RequestHeader("Authorization") String auth) throws ChangeSetPersister.NotFoundException {
+        return ResponseEntity.ok(vacationService.findByWorkerId(id));
     }
 
     @PutMapping

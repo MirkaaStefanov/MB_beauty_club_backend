@@ -28,13 +28,23 @@ public class WorkingHoursService {
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
 
-    public List<WorkingHoursDTO> findByWorkerId() throws ChangeSetPersister.NotFoundException {
+    public List<WorkingHoursDTO> findByAuthenticatedWorker() throws ChangeSetPersister.NotFoundException {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         User authenticatedUser = userRepository.findByEmail(email).orElseThrow(ChangeSetPersister.NotFoundException::new);
 
         Worker worker = workerRepository.findByUser(authenticatedUser).orElseThrow(ChangeSetPersister.NotFoundException::new);
+
+        List<WorkingHours> workingHours = workingHoursRepository.findByWorker(worker);
+        return workingHours.stream()
+                .map(x -> modelMapper.map(x, WorkingHoursDTO.class))
+                .toList();
+    }
+
+    public List<WorkingHoursDTO> findByWorkerId(Long id) throws ChangeSetPersister.NotFoundException {
+
+        Worker worker = workerRepository.findById(id).orElseThrow(ChangeSetPersister.NotFoundException::new);
 
         List<WorkingHours> workingHours = workingHoursRepository.findByWorker(worker);
         return workingHours.stream()

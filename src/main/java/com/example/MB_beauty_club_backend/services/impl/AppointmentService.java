@@ -43,19 +43,19 @@ public class AppointmentService {
     }
 
     public AppointmentDTO save(AppointmentDTO appointmentDTO) throws ChangeSetPersister.NotFoundException {
-        // Find the related entities
+
+        User user = getAuthenticatedUser();
         Worker worker = workerRepository.findById(appointmentDTO.getWorker().getId())
-                .orElseThrow(() -> new ChangeSetPersister.NotFoundException());
-        User user = userRepository.findById(appointmentDTO.getUser().getId())
                 .orElseThrow(() -> new ChangeSetPersister.NotFoundException());
         com.example.MB_beauty_club_backend.models.entity.Service service = serviceRepository.findById(appointmentDTO.getService().getId())
                 .orElseThrow(() -> new ChangeSetPersister.NotFoundException());
 
-        // Map DTO to entity and set relationships
+
         Appointment appointment = modelMapper.map(appointmentDTO, Appointment.class);
         appointment.setWorker(worker);
         appointment.setUser(user);
         appointment.setService(service);
+        appointment.setEndTime(appointment.getStartTime().plusMinutes(service.getDuration()));
 
         Appointment savedAppointment = appointmentRepository.save(appointment);
 

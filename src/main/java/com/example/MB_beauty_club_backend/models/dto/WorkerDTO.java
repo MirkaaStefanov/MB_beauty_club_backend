@@ -24,6 +24,7 @@ public class WorkerDTO {
     private Long id;
     private PublicUserDTO user;
     private String name;
+    private String email;
     private WorkerCategory workerCategory;
 
 

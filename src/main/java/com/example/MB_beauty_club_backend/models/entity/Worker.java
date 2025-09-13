@@ -30,6 +30,7 @@ public class Worker {
     @JoinColumn(name = "user_id")
     private User user;
     private String name;
+    private String email;
     @Enumerated(EnumType.STRING)
     private WorkerCategory workerCategory;
 

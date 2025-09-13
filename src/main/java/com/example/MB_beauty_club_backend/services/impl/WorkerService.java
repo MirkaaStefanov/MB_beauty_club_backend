@@ -72,5 +72,13 @@ public class WorkerService {
         return modelMapper.map(worker, WorkerDTO.class);
     }
 
+    public List<WorkerDTO> findByCategory(WorkerCategory workerCategory) throws ChangeSetPersister.NotFoundException {
+        List<Worker> workers = workerRepository.findByWorkerCategory(workerCategory);
+
+        return workers.stream()
+                .map(x -> modelMapper.map(x, WorkerDTO.class))
+                .toList();
+    }
+
 
 }

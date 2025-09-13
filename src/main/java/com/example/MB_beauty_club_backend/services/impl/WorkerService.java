@@ -29,7 +29,7 @@ public class WorkerService {
         Worker worker = new Worker();
         worker.setWorkerCategory(workerCategory);
         worker.setUser(user);
-
+        worker.setName(user.getName() + user.getSurname());
         user.setRole(Role.WORKER);
         userRepository.save(user);
         return modelMapper.map(workerRepository.save(worker), WorkerDTO.class);

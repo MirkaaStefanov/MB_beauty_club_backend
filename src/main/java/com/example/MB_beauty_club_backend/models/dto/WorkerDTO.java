@@ -22,9 +22,8 @@ import lombok.NoArgsConstructor;
 public class WorkerDTO {
 
     private Long id;
-
     private PublicUserDTO user;
-
+    private String name;
     private WorkerCategory workerCategory;
 
 

@@ -76,11 +76,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<AdminUserDTO> getAllUsers() {
+    public List<PublicUserDTO> getAllUsers() {
         return userRepository
                 .findAll()
                 .stream()
-                .map(x -> modelMapper.map(x, AdminUserDTO.class))
+                .map(x -> modelMapper.map(x, PublicUserDTO.class))
                 .toList();
     }
 

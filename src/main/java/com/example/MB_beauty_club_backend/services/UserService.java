@@ -14,7 +14,7 @@ public interface UserService {
 
     User findByEmail(String email);
 
-    List<AdminUserDTO> getAllUsers();
+    List<PublicUserDTO> getAllUsers();
 
     AdminUserDTO getByIdAdmin(UUID id);
 

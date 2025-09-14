@@ -26,7 +26,7 @@ public class Worker {
     @Enumerated(EnumType.STRING)
     private WorkerCategory workerCategory;
     @Column(name = "is_deleted")
-    private boolean deleted;
+    private boolean deleted = false;
 
 
 }

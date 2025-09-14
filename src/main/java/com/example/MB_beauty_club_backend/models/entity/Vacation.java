@@ -25,5 +25,5 @@ public class Vacation {
     private LocalDate startDate;
     private LocalDate endDate;
     @Column(name = "is_deleted")
-    private boolean deleted;
+    private boolean deleted = false;
 }

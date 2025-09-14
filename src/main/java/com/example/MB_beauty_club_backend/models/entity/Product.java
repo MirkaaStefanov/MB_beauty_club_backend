@@ -36,7 +36,7 @@ public class Product {
     @Min(value = 1, message = "Наличните бройки не могат да бъдат отрицателно число!")
     private int availableQuantity;
     @Column(name = "is_deleted")
-    private boolean deleted;
+    private boolean deleted = false;
     @Column(name = "name")
     private String name;
     @Column(name = "description")

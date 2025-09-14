@@ -42,5 +42,5 @@ public class Appointment {
     private AppointmentStatus status = AppointmentStatus.PENDING;
 
     @Column(name = "is_deleted")
-    private boolean deleted;
+    private boolean deleted = false;
 }

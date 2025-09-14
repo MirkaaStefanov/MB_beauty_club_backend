@@ -33,6 +33,6 @@ public class ShoppingCart {
     @JoinColumn(name = "user_id")
     private User user;
     @Column(name = "is_deleted")
-    private boolean deleted;
+    private boolean deleted = false;
 
 }

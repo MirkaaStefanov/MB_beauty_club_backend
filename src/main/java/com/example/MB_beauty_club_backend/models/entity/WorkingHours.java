@@ -29,5 +29,5 @@ public class WorkingHours {
     private LocalTime startTime;
     private LocalTime endTime;
     @Column(name = "is_deleted")
-    private boolean deleted;
+    private boolean deleted = false;
 }

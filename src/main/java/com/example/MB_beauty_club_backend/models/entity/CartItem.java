@@ -22,7 +22,7 @@ public class CartItem {
     private int quantity;
     private BigDecimal price;
     @Column(name = "is_deleted")
-    private boolean deleted;
+    private boolean deleted = false;
     @ManyToOne
     @JoinColumn(name = "shopping_cart_id")
     private ShoppingCart shoppingCart;

@@ -33,7 +33,7 @@ public class OrderProduct {
     @JoinColumn(name = "order_id")
     private Order order;
     @Column(name = "is_deleted")
-    private boolean deleted;
+    private boolean deleted = false;
     @Column(name = "selling_price")
     private BigDecimal sellingPrice;
 

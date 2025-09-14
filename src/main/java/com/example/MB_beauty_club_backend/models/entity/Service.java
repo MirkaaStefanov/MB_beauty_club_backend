@@ -25,5 +25,5 @@ public class Service {
     private Double price;
     private Integer duration;
     @Column(name = "is_deleted")
-    private boolean deleted;
+    private boolean deleted = false;
 }

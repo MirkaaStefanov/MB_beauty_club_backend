@@ -30,7 +30,7 @@ public class Order {
     private User user;
     private LocalDate orderDate;
     @Column(name = "is_deleted")
-    private boolean deleted;
+    private boolean deleted = false;
     @Column(name = "is_invoiced")
     private boolean invoiced;
     @Enumerated(EnumType.STRING)

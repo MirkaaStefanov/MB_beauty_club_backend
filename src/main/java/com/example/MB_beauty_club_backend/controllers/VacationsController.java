@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/vacations")
@@ -29,7 +30,7 @@ public class VacationsController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<List<VacationDTO>> getVacationsByWorkerId(@PathVariable Long id, @RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException {
+    public ResponseEntity<List<VacationDTO>> getVacationsByWorkerId(@PathVariable UUID id, @RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException {
         return ResponseEntity.ok(vacationService.findByWorkerId(id));
     }
 

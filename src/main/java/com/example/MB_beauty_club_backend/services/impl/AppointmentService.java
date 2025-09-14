@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -70,7 +71,7 @@ public class AppointmentService {
         appointmentRepository.save(appointment);
     }
 
-    public List<AppointmentDTO> findByWorker(Long id) throws ChangeSetPersister.NotFoundException {
+    public List<AppointmentDTO> findByWorker(UUID id) throws ChangeSetPersister.NotFoundException {
 
         Worker worker = workerRepository.findById(id)
                 .orElseThrow(ChangeSetPersister.NotFoundException::new);

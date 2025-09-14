@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/services")
@@ -36,7 +37,7 @@ public class ServicesController {
     }
 
     @GetMapping("/byId")
-    public ResponseEntity<ServiceDTO> getServiceById(@RequestParam("id") Long id, @RequestHeader(value = "Authorization", required = false) String auth) {
+    public ResponseEntity<ServiceDTO> getServiceById(@RequestParam("id") UUID id, @RequestHeader(value = "Authorization", required = false) String auth) {
         ServiceDTO service = serviceService.findById(id);
         if (service != null) {
             return ResponseEntity.ok(service);
@@ -57,7 +58,7 @@ public class ServicesController {
     }
 
     @PostMapping("/delete")
-    public ResponseEntity<Void> deleteService(@RequestParam("id") Long id, @RequestHeader("Authorization") String auth) throws ChangeSetPersister.NotFoundException {
+    public ResponseEntity<Void> deleteService(@RequestParam("id") UUID id, @RequestHeader("Authorization") String auth) throws ChangeSetPersister.NotFoundException {
         serviceService.deleteById(id);
         return ResponseEntity.ok().build();
     }

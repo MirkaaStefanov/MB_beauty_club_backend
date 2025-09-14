@@ -9,9 +9,10 @@ import org.w3c.dom.ls.LSException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface WorkerRepository extends JpaRepository<Worker, Long> {
+public interface WorkerRepository extends JpaRepository<Worker, UUID> {
     List<Worker> findAllByDeletedFalse();
 
     Optional<Worker> findByUserAndDeletedFalse(User user);

@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/appointments")
@@ -32,7 +33,7 @@ public class AppointmentController {
     }
 
     @GetMapping("/worker-appointments/{id}")
-    public ResponseEntity<List<AppointmentDTO>> getWorkerAppointments(@PathVariable Long id, @RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException {
+    public ResponseEntity<List<AppointmentDTO>> getWorkerAppointments(@PathVariable UUID id, @RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException {
         return ResponseEntity.ok(appointmentService.findByWorker(id));
     }
 

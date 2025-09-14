@@ -10,6 +10,7 @@ import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,13 +28,13 @@ public class ServiceService {
         return modelMapper.map(savedService, ServiceDTO.class);
     }
 
-    public ServiceDTO findById(Long id) {
+    public ServiceDTO findById(UUID id) {
         return serviceRepository.findById(id)
                 .map(service -> modelMapper.map(service, ServiceDTO.class))
                 .orElse(null);
     }
 
-    public void deleteById(Long id) throws ChangeSetPersister.NotFoundException {
+    public void deleteById(UUID id) throws ChangeSetPersister.NotFoundException {
         com.example.MB_beauty_club_backend.models.entity.Service service = serviceRepository.findById(id).orElseThrow(ChangeSetPersister.NotFoundException::new);
         service.setDeleted(true);
         serviceRepository.save(service);

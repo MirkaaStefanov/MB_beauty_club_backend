@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -41,7 +42,7 @@ public class WorkingHoursService {
                 .toList();
     }
 
-    public List<WorkingHoursDTO> findByWorkerId(Long id) throws ChangeSetPersister.NotFoundException {
+    public List<WorkingHoursDTO> findByWorkerId(UUID id) throws ChangeSetPersister.NotFoundException {
 
         Worker worker = workerRepository.findById(id).orElseThrow(ChangeSetPersister.NotFoundException::new);
 

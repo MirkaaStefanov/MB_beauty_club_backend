@@ -51,13 +51,13 @@ public class WorkerService {
                 .toList();
     }
 
-    public WorkerDTO update(Long id, WorkerDTO update) {
+    public WorkerDTO update(UUID id, WorkerDTO update) {
         Worker worker = modelMapper.map(update, Worker.class);
         worker.setId(id);
         return modelMapper.map(workerRepository.save(worker), WorkerDTO.class);
     }
 
-    public void delete(Long id) throws ChangeSetPersister.NotFoundException {
+    public void delete(UUID id) throws ChangeSetPersister.NotFoundException {
         Worker worker = workerRepository.findById(id).orElseThrow(ChangeSetPersister.NotFoundException::new);
         User user = worker.getUser();
         user.setRole(Role.USER);
@@ -67,7 +67,7 @@ public class WorkerService {
         workerRepository.save(worker);
     }
 
-    public WorkerDTO findByid(Long id) throws ChangeSetPersister.NotFoundException {
+    public WorkerDTO findByid(UUID id) throws ChangeSetPersister.NotFoundException {
         Worker worker = workerRepository.findById(id).orElseThrow(ChangeSetPersister.NotFoundException::new);
         return modelMapper.map(worker, WorkerDTO.class);
     }

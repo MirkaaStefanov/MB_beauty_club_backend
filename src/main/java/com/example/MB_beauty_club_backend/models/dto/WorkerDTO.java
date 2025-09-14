@@ -15,13 +15,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class WorkerDTO {
 
-    private Long id;
+    private UUID id;
     private PublicUserDTO user;
     private String name;
     private String email;

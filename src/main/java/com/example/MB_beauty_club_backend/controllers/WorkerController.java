@@ -38,18 +38,18 @@ public class WorkerController {
     }
 
     @PutMapping
-    public ResponseEntity<WorkerDTO> update(@RequestParam Long id, @RequestBody WorkerDTO workerDTO, @RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException {
+    public ResponseEntity<WorkerDTO> update(@RequestParam UUID id, @RequestBody WorkerDTO workerDTO, @RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException {
         return ResponseEntity.ok(workerService.update(id, workerDTO));
     }
 
     @PostMapping("/delete")
-    public ResponseEntity<Void> delete(@RequestParam Long id, @RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException {
+    public ResponseEntity<Void> delete(@RequestParam UUID id, @RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException {
         workerService.delete(id);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<WorkerDTO> findById(@PathVariable Long id, @RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException {
+    public ResponseEntity<WorkerDTO> findById(@PathVariable UUID id, @RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException {
         return ResponseEntity.ok(workerService.findByid(id));
     }
 

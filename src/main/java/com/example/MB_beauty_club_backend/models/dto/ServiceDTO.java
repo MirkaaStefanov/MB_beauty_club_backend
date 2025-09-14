@@ -7,13 +7,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class ServiceDTO {
 
-    private Long id;
+    private UUID id;
     private WorkerCategory category;
     private String name;
     private String description;

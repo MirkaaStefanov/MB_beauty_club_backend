@@ -1,6 +1,7 @@
 package com.example.MB_beauty_club_backend.services.impl;
 
 import com.example.MB_beauty_club_backend.enums.AppointmentStatus;
+import com.example.MB_beauty_club_backend.enums.Role;
 import com.example.MB_beauty_club_backend.models.dto.AppointmentDTO;
 import com.example.MB_beauty_club_backend.models.entity.Appointment;
 import com.example.MB_beauty_club_backend.models.entity.User;
@@ -16,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -78,12 +80,26 @@ public class AppointmentService {
                 .collect(Collectors.toList());
     }
 
-    public List<AppointmentDTO> findByUser() throws ChangeSetPersister.NotFoundException {
+    public List<AppointmentDTO> findByAuthenticated() throws ChangeSetPersister.NotFoundException {
         User authenticatedUser = getAuthenticatedUser();
 
-        return appointmentRepository.findByUserAndDeletedFalse(authenticatedUser).stream()
-                .map(appointment -> modelMapper.map(appointment, AppointmentDTO.class))
-                .collect(Collectors.toList());
+        if (authenticatedUser.getRole().equals(Role.WORKER)) {
+
+            Worker worker = workerRepository.findByUserAndDeletedFalse(authenticatedUser).orElseThrow(ChangeSetPersister.NotFoundException::new);
+
+            List<Appointment> appointments = appointmentRepository.findByWorkerAndDeletedFalse(worker);
+            return appointmentRepository.findByWorkerAndDeletedFalse(worker).stream()
+                    .map(appointment -> modelMapper.map(appointment, AppointmentDTO.class))
+                    .collect(Collectors.toList());
+        }
+
+        if(authenticatedUser.getRole().equals(Role.USER)) {
+            return appointmentRepository.findByUserAndDeletedFalse(authenticatedUser).stream()
+                    .map(appointment -> modelMapper.map(appointment, AppointmentDTO.class))
+                    .collect(Collectors.toList());
+        }
+
+        return new ArrayList<>();
     }
 
     public List<AppointmentDTO> findPendingByWorker() throws ChangeSetPersister.NotFoundException {

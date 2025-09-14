@@ -28,7 +28,7 @@ public class AppointmentController {
 
     @GetMapping("/my-appointments")
     public ResponseEntity<List<AppointmentDTO>> getMyAppointments(@RequestHeader("Authorization") String auth) throws ChangeSetPersister.NotFoundException {
-        return ResponseEntity.ok(appointmentService.findByUser());
+        return ResponseEntity.ok(appointmentService.findByAuthenticated());
     }
 
     @GetMapping("/worker-appointments/{id}")

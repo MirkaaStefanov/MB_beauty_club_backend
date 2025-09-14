@@ -80,7 +80,7 @@ public class OrderService {
         Order order = orderRepository.findByIdAndDeletedFalse(id).orElseThrow(ChangeSetPersister.NotFoundException::new);
         order.setDeleted(true);
         order.setUser(null);
-        orderRepository.delete(order);
+        orderRepository.save(order);
     }
 
     public OrderDTO findFirstByOrderByIdDesc() {

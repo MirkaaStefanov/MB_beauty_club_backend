@@ -64,10 +64,10 @@ public class ProductService {
         return mapper.map(repository.save(existing), ProductDTO.class);
     }
 
-    public void delete(Long id) {
-        Product existing = repository.findByIdAndDeletedFalse(id).orElseThrow();
+    public void delete(Long id) throws ChangeSetPersister.NotFoundException {
+        Product existing = repository.findByIdAndDeletedFalse(id).orElseThrow(ChangeSetPersister.NotFoundException::new);
         existing.setDeleted(true);
-        repository.delete(existing);
+        repository.save(existing);
     }
 
     public ProductDTO toggleAvailability(Long id) throws ChangeSetPersister.NotFoundException {

@@ -26,6 +26,7 @@ public class WorkerDTO {
     private String name;
     private String email;
     private WorkerCategory workerCategory;
+    private boolean deleted;
 
 
 }

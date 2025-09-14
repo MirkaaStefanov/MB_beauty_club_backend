@@ -3,7 +3,6 @@ package com.example.MB_beauty_club_backend.services.impl;
 import com.example.MB_beauty_club_backend.enums.Role;
 import com.example.MB_beauty_club_backend.enums.WorkerCategory;
 import com.example.MB_beauty_club_backend.models.dto.WorkerDTO;
-import com.example.MB_beauty_club_backend.models.dto.auth.PublicUserDTO;
 import com.example.MB_beauty_club_backend.models.entity.User;
 import com.example.MB_beauty_club_backend.models.entity.Worker;
 import com.example.MB_beauty_club_backend.repositories.UserRepository;
@@ -30,7 +29,7 @@ public class WorkerService {
 
         User user = userRepository.findById(userId).orElseThrow(ChangeSetPersister.NotFoundException::new);
 
-        Optional<Worker> optional = workerRepository.findByUser(user);
+        Optional<Worker> optional = workerRepository.findByUserAndDeletedFalse(user);
         if (optional.isPresent()) {
             throw new ValidationException();
         }
@@ -46,7 +45,7 @@ public class WorkerService {
     }
 
     public List<WorkerDTO> allWorkers() {
-        List<Worker> all = workerRepository.findAll();
+        List<Worker> all = workerRepository.findAllByDeletedFalse();
         return all.stream()
                 .map(x -> modelMapper.map(x, WorkerDTO.class))
                 .toList();
@@ -63,8 +62,9 @@ public class WorkerService {
         User user = worker.getUser();
         user.setRole(Role.USER);
         worker.setUser(null);
+        worker.setDeleted(true);
         userRepository.save(user);
-        workerRepository.delete(worker);
+        workerRepository.save(worker);
     }
 
     public WorkerDTO findByid(Long id) throws ChangeSetPersister.NotFoundException {
@@ -73,7 +73,7 @@ public class WorkerService {
     }
 
     public List<WorkerDTO> findByCategory(WorkerCategory workerCategory) throws ChangeSetPersister.NotFoundException {
-        List<Worker> workers = workerRepository.findByWorkerCategory(workerCategory);
+        List<Worker> workers = workerRepository.findByWorkerCategoryAndDeletedFalse(workerCategory);
 
         return workers.stream()
                 .map(x -> modelMapper.map(x, WorkerDTO.class))

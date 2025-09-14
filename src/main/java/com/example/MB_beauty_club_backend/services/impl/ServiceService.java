@@ -2,9 +2,11 @@ package com.example.MB_beauty_club_backend.services.impl;
 
 import com.example.MB_beauty_club_backend.enums.WorkerCategory;
 import com.example.MB_beauty_club_backend.models.dto.ServiceDTO;
+import com.example.MB_beauty_club_backend.models.entity.Product;
 import com.example.MB_beauty_club_backend.repositories.ServiceRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,18 +33,20 @@ public class ServiceService {
                 .orElse(null);
     }
 
-    public void deleteById(Long id) {
-        serviceRepository.deleteById(id);
+    public void deleteById(Long id) throws ChangeSetPersister.NotFoundException {
+        com.example.MB_beauty_club_backend.models.entity.Service service = serviceRepository.findById(id).orElseThrow(ChangeSetPersister.NotFoundException::new);
+        service.setDeleted(true);
+        serviceRepository.save(service);
     }
 
     public List<ServiceDTO> findAll() {
-        return serviceRepository.findAll().stream()
+        return serviceRepository.findAllByDeletedFalse().stream()
                 .map(service -> modelMapper.map(service, ServiceDTO.class))
                 .collect(Collectors.toList());
     }
 
     public List<ServiceDTO> findByCategory(WorkerCategory category) {
-        return serviceRepository.findByCategory(category).stream()
+        return serviceRepository.findByCategoryAndDeletedFalse(category).stream()
                 .map(service -> modelMapper.map(service, ServiceDTO.class))
                 .collect(Collectors.toList());
     }

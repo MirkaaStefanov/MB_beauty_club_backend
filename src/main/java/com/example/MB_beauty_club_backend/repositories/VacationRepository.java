@@ -9,6 +9,6 @@ import java.util.List;
 
 @Repository
 public interface VacationRepository extends JpaRepository<Vacation, Long> {
-
-    List<Vacation> findByWorker(Worker worker);
+    List<Vacation> findAllByDeletedFalse();
+    List<Vacation> findByWorkerAndDeletedFalse(Worker worker);
 }

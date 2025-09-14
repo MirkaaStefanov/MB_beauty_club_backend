@@ -1,15 +1,7 @@
 package com.example.MB_beauty_club_backend.models.entity;
 
 import com.example.MB_beauty_club_backend.enums.WorkerCategory;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -33,6 +25,8 @@ public class Worker {
     private String email;
     @Enumerated(EnumType.STRING)
     private WorkerCategory workerCategory;
+    @Column(name = "is_deleted")
+    private boolean deleted;
 
 
 }

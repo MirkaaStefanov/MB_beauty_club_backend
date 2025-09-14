@@ -8,11 +8,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum WorkerCategory {
 
-    HAIRDRESSER("Подстригване"),
-    NAIL_TECHNICIAN("Маникюр и Педикюр"),
-    MAKEUP_ARTIST("Грим"),
-    LASH_TECHNICIAN("Миглопластика"),
-    MASSEUSE("Масаж");
+    HAIRSTYLING("Подстригване"),
+    NAIL("Маникюр и Педикюр"),
+    MAKEUP("Грим"),
+    LASH("Миглопластика"),
+    MASSAGE("Масаж");
 
     private final String description;
 

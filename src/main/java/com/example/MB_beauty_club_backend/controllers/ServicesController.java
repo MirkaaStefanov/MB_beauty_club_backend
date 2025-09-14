@@ -5,6 +5,7 @@ import com.example.MB_beauty_club_backend.models.dto.ServiceDTO;
 import com.example.MB_beauty_club_backend.enums.WorkerCategory;
 import com.example.MB_beauty_club_backend.services.impl.ServiceService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,7 +31,7 @@ public class ServicesController {
     }
 
     @GetMapping("/byCategory")
-    public ResponseEntity<List<ServiceDTO>> getServicesByCategory(@RequestParam("category") WorkerCategory category, @RequestHeader("Authorization") String auth) {
+    public ResponseEntity<List<ServiceDTO>> getServicesByCategory(@RequestParam("category") WorkerCategory category, @RequestHeader(value = "Authorization", required = false) String auth) {
         return ResponseEntity.ok(serviceService.findByCategory(category));
     }
 
@@ -56,7 +57,7 @@ public class ServicesController {
     }
 
     @PostMapping("/delete")
-    public ResponseEntity<Void> deleteService(@RequestParam("id") Long id, @RequestHeader("Authorization") String auth) {
+    public ResponseEntity<Void> deleteService(@RequestParam("id") Long id, @RequestHeader("Authorization") String auth) throws ChangeSetPersister.NotFoundException {
         serviceService.deleteById(id);
         return ResponseEntity.ok().build();
     }

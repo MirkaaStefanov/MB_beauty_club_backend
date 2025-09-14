@@ -50,7 +50,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id,  @RequestHeader(value = "Authorization", required = false) String auth) {
+    public ResponseEntity<Void> delete(@PathVariable Long id,  @RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException {
         productService.delete(id);
         return ResponseEntity.noContent().build();
     }

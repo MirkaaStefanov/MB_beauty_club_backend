@@ -5,15 +5,16 @@ import com.example.MB_beauty_club_backend.models.entity.User;
 import com.example.MB_beauty_club_backend.models.entity.Worker;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import org.w3c.dom.ls.LSException;
 
-import java.nio.file.LinkOption;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface WorkerRepository extends JpaRepository<Worker, Long> {
+    List<Worker> findAllByDeletedFalse();
 
-    Optional<Worker> findByUser(User user);
+    Optional<Worker> findByUserAndDeletedFalse(User user);
 
-    List<Worker> findByWorkerCategory(WorkerCategory workerCategory);
+    List<Worker> findByWorkerCategoryAndDeletedFalse(WorkerCategory workerCategory);
 }

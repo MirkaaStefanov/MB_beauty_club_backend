@@ -20,4 +20,6 @@ public class VacationDTO {
     private WorkerDTO worker;
     private LocalDate startDate;
     private LocalDate endDate;
+    private boolean deleted;
+
 }

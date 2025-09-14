@@ -24,5 +24,7 @@ public class WorkingHoursDTO {
     private DayOfWeek dayOfWeek;
     private LocalTime startTime;
     private LocalTime endTime;
+    private boolean deleted;
+
 
 }

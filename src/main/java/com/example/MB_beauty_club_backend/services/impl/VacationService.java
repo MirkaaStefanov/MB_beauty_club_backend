@@ -39,7 +39,7 @@ public class VacationService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         User authenticatedUser = userRepository.findByEmail(email).orElseThrow(ChangeSetPersister.NotFoundException::new);
-        Worker worker = workerRepository.findByUser(authenticatedUser).orElseThrow(ChangeSetPersister.NotFoundException::new);
+        Worker worker = workerRepository.findByUserAndDeletedFalse(authenticatedUser).orElseThrow(ChangeSetPersister.NotFoundException::new);
 
         Vacation vacation = modelMapper.map(vacationDTO, Vacation.class);
         vacation.setWorker(worker);
@@ -52,8 +52,8 @@ public class VacationService {
         vacationRepository.deleteById(id);
     }
 
-    public List<VacationDTO> findAll() {
-        return vacationRepository.findAll().stream()
+    public List<VacationDTO> findAllByDeletedFalse() {
+        return vacationRepository.findAllByDeletedFalse().stream()
                 .map(vacation -> modelMapper.map(vacation, VacationDTO.class))
                 .collect(Collectors.toList());
     }
@@ -63,9 +63,9 @@ public class VacationService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         User authenticatedUser = userRepository.findByEmail(email).orElseThrow(ChangeSetPersister.NotFoundException::new);
-        Worker worker = workerRepository.findByUser(authenticatedUser).orElseThrow(ChangeSetPersister.NotFoundException::new);
+        Worker worker = workerRepository.findByUserAndDeletedFalse(authenticatedUser).orElseThrow(ChangeSetPersister.NotFoundException::new);
 
-        return vacationRepository.findByWorker(worker).stream()
+        return vacationRepository.findByWorkerAndDeletedFalse(worker).stream()
                 .map(vacation -> modelMapper.map(vacation, VacationDTO.class))
                 .collect(Collectors.toList());
     }
@@ -74,7 +74,7 @@ public class VacationService {
 
         Worker worker = workerRepository.findById(id).orElseThrow(ChangeSetPersister.NotFoundException::new);
 
-        return vacationRepository.findByWorker(worker).stream()
+        return vacationRepository.findByWorkerAndDeletedFalse(worker).stream()
                 .map(vacation -> modelMapper.map(vacation, VacationDTO.class))
                 .collect(Collectors.toList());
     }

@@ -1,6 +1,5 @@
 package com.example.MB_beauty_club_backend.services.impl;
 
-import com.example.MB_beauty_club_backend.models.dto.WorkerDTO;
 import com.example.MB_beauty_club_backend.models.dto.WorkingHoursDTO;
 import com.example.MB_beauty_club_backend.models.entity.User;
 import com.example.MB_beauty_club_backend.models.entity.Worker;
@@ -34,9 +33,9 @@ public class WorkingHoursService {
         String email = authentication.getName();
         User authenticatedUser = userRepository.findByEmail(email).orElseThrow(ChangeSetPersister.NotFoundException::new);
 
-        Worker worker = workerRepository.findByUser(authenticatedUser).orElseThrow(ChangeSetPersister.NotFoundException::new);
+        Worker worker = workerRepository.findByUserAndDeletedFalse(authenticatedUser).orElseThrow(ChangeSetPersister.NotFoundException::new);
 
-        List<WorkingHours> workingHours = workingHoursRepository.findByWorker(worker);
+        List<WorkingHours> workingHours = workingHoursRepository.findByWorkerAndDeletedFalse(worker);
         return workingHours.stream()
                 .map(x -> modelMapper.map(x, WorkingHoursDTO.class))
                 .toList();
@@ -46,7 +45,7 @@ public class WorkingHoursService {
 
         Worker worker = workerRepository.findById(id).orElseThrow(ChangeSetPersister.NotFoundException::new);
 
-        List<WorkingHours> workingHours = workingHoursRepository.findByWorker(worker);
+        List<WorkingHours> workingHours = workingHoursRepository.findByWorkerAndDeletedFalse(worker);
         return workingHours.stream()
                 .map(x -> modelMapper.map(x, WorkingHoursDTO.class))
                 .toList();
@@ -62,7 +61,7 @@ public class WorkingHoursService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         User authenticatedUser = userRepository.findByEmail(email).orElseThrow(ChangeSetPersister.NotFoundException::new);
-        Worker worker = workerRepository.findByUser(authenticatedUser).orElseThrow(ChangeSetPersister.NotFoundException::new);
+        Worker worker = workerRepository.findByUserAndDeletedFalse(authenticatedUser).orElseThrow(ChangeSetPersister.NotFoundException::new);
 
         // Delete all existing working hours for the worker
         workingHoursRepository.deleteAllByWorker(worker);

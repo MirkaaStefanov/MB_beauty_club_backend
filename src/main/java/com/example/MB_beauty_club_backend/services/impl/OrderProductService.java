@@ -12,9 +12,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -77,7 +75,7 @@ public class OrderProductService {
 
     public List<OrderProductDTO> getOrderProducts(Long orderId) throws ChangeSetPersister.NotFoundException {
         Order order = orderRepository.findById(orderId).orElseThrow(ChangeSetPersister.NotFoundException::new);
-        List<OrderProduct> orderProducts = orderProductRepository.findAllByOrderId(order);
+        List<OrderProduct> orderProducts = orderProductRepository.findAllByOrderIdAndDeletedFalse(order);
         return orderProducts.stream()
                 .map(orderProduct -> modelMapper.map(orderProduct, OrderProductDTO.class))
                 .collect(Collectors.toList());

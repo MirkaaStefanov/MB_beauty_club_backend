@@ -54,7 +54,7 @@ public class AppointmentController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAppointment(@PathVariable Long id, @RequestHeader("Authorization") String auth) {
+    public ResponseEntity<Void> deleteAppointment(@PathVariable Long id, @RequestHeader("Authorization") String auth) throws ChangeSetPersister.NotFoundException {
         appointmentService.deleteById(id);
         return ResponseEntity.ok().build();
     }

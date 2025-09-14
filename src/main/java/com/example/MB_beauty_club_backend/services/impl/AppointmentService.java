@@ -62,8 +62,10 @@ public class AppointmentService {
         return modelMapper.map(savedAppointment, AppointmentDTO.class);
     }
 
-    public void deleteById(Long id) {
-        appointmentRepository.deleteById(id);
+    public void deleteById(Long id) throws ChangeSetPersister.NotFoundException {
+        Appointment appointment = appointmentRepository.findById(id).orElseThrow(ChangeSetPersister.NotFoundException::new);
+        appointment.setDeleted(true);
+        appointmentRepository.save(appointment);
     }
 
     public List<AppointmentDTO> findByWorker(Long id) throws ChangeSetPersister.NotFoundException {
@@ -71,7 +73,7 @@ public class AppointmentService {
         Worker worker = workerRepository.findById(id)
                 .orElseThrow(ChangeSetPersister.NotFoundException::new);
 
-        return appointmentRepository.findByWorker(worker).stream()
+        return appointmentRepository.findByWorkerAndDeletedFalse(worker).stream()
                 .map(appointment -> modelMapper.map(appointment, AppointmentDTO.class))
                 .collect(Collectors.toList());
     }
@@ -79,17 +81,17 @@ public class AppointmentService {
     public List<AppointmentDTO> findByUser() throws ChangeSetPersister.NotFoundException {
         User authenticatedUser = getAuthenticatedUser();
 
-        return appointmentRepository.findByUser(authenticatedUser).stream()
+        return appointmentRepository.findByUserAndDeletedFalse(authenticatedUser).stream()
                 .map(appointment -> modelMapper.map(appointment, AppointmentDTO.class))
                 .collect(Collectors.toList());
     }
 
     public List<AppointmentDTO> findPendingByWorker() throws ChangeSetPersister.NotFoundException {
         User authenticatedUser = getAuthenticatedUser();
-        Worker worker = workerRepository.findByUser(authenticatedUser)
+        Worker worker = workerRepository.findByUserAndDeletedFalse(authenticatedUser)
                 .orElseThrow(() -> new ChangeSetPersister.NotFoundException());
 
-        return appointmentRepository.findByWorkerAndStatus(worker, AppointmentStatus.PENDING).stream()
+        return appointmentRepository.findByWorkerAndStatusAndDeletedFalse(worker, AppointmentStatus.PENDING).stream()
                 .map(appointment -> modelMapper.map(appointment, AppointmentDTO.class))
                 .collect(Collectors.toList());
     }

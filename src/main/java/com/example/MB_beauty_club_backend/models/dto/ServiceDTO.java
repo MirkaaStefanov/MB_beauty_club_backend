@@ -19,5 +19,7 @@ public class ServiceDTO {
     private String description;
     private Double price;
     private Integer duration;
+    private boolean deleted;
+
 
 }

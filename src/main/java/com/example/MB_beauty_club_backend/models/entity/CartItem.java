@@ -1,12 +1,6 @@
 package com.example.MB_beauty_club_backend.models.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,6 +21,7 @@ public class CartItem {
     private Product product;
     private int quantity;
     private BigDecimal price;
+    @Column(name = "is_deleted")
     private boolean deleted;
     @ManyToOne
     @JoinColumn(name = "shopping_cart_id")

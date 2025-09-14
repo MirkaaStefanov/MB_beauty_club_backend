@@ -12,9 +12,9 @@ import java.util.List;
 @Repository
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
 
-    List<Appointment> findByWorker(Worker worker);
+    List<Appointment> findByWorkerAndDeletedFalse(Worker worker);
 
-    List<Appointment> findByUser(User user);
+    List<Appointment> findByUserAndDeletedFalse(User user);
 
-    List<Appointment> findByWorkerAndStatus(Worker worker, AppointmentStatus status);
+    List<Appointment> findByWorkerAndStatusAndDeletedFalse(Worker worker, AppointmentStatus status);
 }

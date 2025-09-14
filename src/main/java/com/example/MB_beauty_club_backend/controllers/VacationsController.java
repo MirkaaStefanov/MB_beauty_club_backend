@@ -29,7 +29,7 @@ public class VacationsController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<List<VacationDTO>> getVacationsByWorkerId(@PathVariable Long id, @RequestHeader("Authorization") String auth) throws ChangeSetPersister.NotFoundException {
+    public ResponseEntity<List<VacationDTO>> getVacationsByWorkerId(@PathVariable Long id, @RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException {
         return ResponseEntity.ok(vacationService.findByWorkerId(id));
     }
 
@@ -40,7 +40,7 @@ public class VacationsController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id, @RequestHeader("Authorization") String auth) throws ChangeSetPersister.NotFoundException {
+    public ResponseEntity<Void> delete(@PathVariable Long id, @RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException {
         vacationService.deleteById(id);
         return ResponseEntity.ok().build();
     }

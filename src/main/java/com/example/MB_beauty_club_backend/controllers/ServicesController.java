@@ -26,7 +26,7 @@ public class ServicesController {
     private final ServiceService serviceService;
 
     @GetMapping
-    public ResponseEntity<List<ServiceDTO>> getAllServices(@RequestHeader("Authorization") String auth) {
+    public ResponseEntity<List<ServiceDTO>> getAllServices(@RequestHeader(value = "Authorization", required = false) String auth) {
         return ResponseEntity.ok(serviceService.findAll());
     }
 
@@ -36,7 +36,7 @@ public class ServicesController {
     }
 
     @GetMapping("/byId")
-    public ResponseEntity<ServiceDTO> getServiceById(@RequestParam("id") Long id, @RequestHeader("Authorization") String auth) {
+    public ResponseEntity<ServiceDTO> getServiceById(@RequestParam("id") Long id, @RequestHeader(value = "Authorization", required = false) String auth) {
         ServiceDTO service = serviceService.findById(id);
         if (service != null) {
             return ResponseEntity.ok(service);

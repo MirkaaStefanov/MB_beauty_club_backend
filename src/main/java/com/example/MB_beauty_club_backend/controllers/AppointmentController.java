@@ -32,7 +32,7 @@ public class AppointmentController {
     }
 
     @GetMapping("/worker-appointments/{id}")
-    public ResponseEntity<List<AppointmentDTO>> getWorkerAppointments(@PathVariable Long id, @RequestHeader("Authorization") String auth) throws ChangeSetPersister.NotFoundException {
+    public ResponseEntity<List<AppointmentDTO>> getWorkerAppointments(@PathVariable Long id, @RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException {
         return ResponseEntity.ok(appointmentService.findByWorker(id));
     }
 

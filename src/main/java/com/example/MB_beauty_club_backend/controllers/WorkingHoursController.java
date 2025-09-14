@@ -29,7 +29,7 @@ public class WorkingHoursController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<List<WorkingHoursDTO>> getWorkingHoursByWorkerId(@PathVariable Long id, @RequestHeader("Authorization") String auth) throws ChangeSetPersister.NotFoundException {
+    public ResponseEntity<List<WorkingHoursDTO>> getWorkingHoursByWorkerId(@PathVariable Long id, @RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException {
         return ResponseEntity.ok(workingHoursService.findByWorkerId(id));
     }
 

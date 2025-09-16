@@ -12,11 +12,14 @@ import com.example.MB_beauty_club_backend.repositories.UserRepository;
 import com.example.MB_beauty_club_backend.repositories.WorkerRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.ValidationException;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -45,7 +48,7 @@ public class AppointmentService {
                 .orElse(null);
     }
 
-    public AppointmentDTO save(AppointmentDTO appointmentDTO) throws ChangeSetPersister.NotFoundException {
+    public AppointmentDTO save(AppointmentDTO appointmentDTO) throws Exception {
 
         User user = getAuthenticatedUser();
         Worker worker = workerRepository.findById(appointmentDTO.getWorker().getId())
@@ -53,6 +56,9 @@ public class AppointmentService {
         com.example.MB_beauty_club_backend.models.entity.Service service = serviceRepository.findById(appointmentDTO.getService().getId())
                 .orElseThrow(() -> new ChangeSetPersister.NotFoundException());
 
+        if (appointmentDTO.getStartTime().isBefore(LocalDate.now().atStartOfDay())){
+            throw  new Exception();
+        }
 
         Appointment appointment = modelMapper.map(appointmentDTO, Appointment.class);
         appointment.setWorker(worker);

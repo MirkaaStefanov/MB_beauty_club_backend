@@ -43,7 +43,7 @@ public class AppointmentController {
     }
 
     @PostMapping("/book")
-    public ResponseEntity<Void> bookAppointment(@RequestBody AppointmentDTO appointmentDTO, @RequestHeader("Authorization") String auth) throws ChangeSetPersister.NotFoundException {
+    public ResponseEntity<Void> bookAppointment(@RequestBody AppointmentDTO appointmentDTO, @RequestHeader("Authorization") String auth) throws Exception {
         appointmentService.save(appointmentDTO);
         return ResponseEntity.ok().build();
     }

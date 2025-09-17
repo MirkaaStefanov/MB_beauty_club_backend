@@ -60,4 +60,21 @@ public class ProductController {
         return ResponseEntity.ok(productService.toggleAvailability(id));
     }
 
+    @PutMapping("/{id}/promote/{percent}")
+    public ResponseEntity<ProductDTO> createPromotion(
+            @PathVariable Long id,
+            @PathVariable int percent,
+            @RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException {
+
+        return ResponseEntity.ok(productService.createPromotion(id, percent));
+    }
+
+    @DeleteMapping("/{id}/promote")
+    public ResponseEntity<ProductDTO> deletePromotion(
+            @PathVariable Long id,
+            @RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException {
+
+        return ResponseEntity.ok(productService.deletePromotion(id));
+    }
+
 }

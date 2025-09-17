@@ -67,7 +67,13 @@ public class ShoppingCartService {
                 throw new ValidationException("Quantity must be more than 0");
             }
             cartItem.setQuantity(quantity);
-            cartItem.setPrice(product.getPrice());
+            if(product.isPromotion()){
+                cartItem.setPrice(product.getPromotionPrice());
+                cartItem.setEuroPrice(product.getPromotionEuroPrice());
+            }else{
+                cartItem.setPrice(product.getPrice());
+                cartItem.setEuroPrice(product.getEuroPrice());
+            }
             cartItem.setShoppingCart(shoppingCart);
             cartItemRepository.save(cartItem);
         }

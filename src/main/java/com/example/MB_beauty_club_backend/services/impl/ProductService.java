@@ -2,7 +2,9 @@ package com.example.MB_beauty_club_backend.services.impl;
 
 import com.example.MB_beauty_club_backend.enums.ProductCategory;
 import com.example.MB_beauty_club_backend.models.dto.ProductDTO;
+import com.example.MB_beauty_club_backend.models.entity.CartItem;
 import com.example.MB_beauty_club_backend.models.entity.Product;
+import com.example.MB_beauty_club_backend.repositories.CartItemRepository;
 import com.example.MB_beauty_club_backend.repositories.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
 public class ProductService {
 
     private final ProductRepository repository;
+    private final CartItemRepository cartItemRepository;
     private final ModelMapper mapper;
     private static final BigDecimal EURO_EXCHANGE_RATE = new BigDecimal("1.95583");
 
@@ -56,14 +59,17 @@ public class ProductService {
     }
 
     public ProductDTO update(Long id, ProductDTO dto) {
-        Product existing = repository.findByIdAndDeletedFalse(id).orElseThrow();
-        BigDecimal euroPrice = existing.getPrice().divide(new BigDecimal("1.95583"), 2, RoundingMode.HALF_UP);
-        existing.setEuroPrice(euroPrice);
-        mapper.map(dto, existing);
+        Product updated = mapper.map(dto, Product.class);
+
+        BigDecimal euroPrice = dto.getPrice().divide(EURO_EXCHANGE_RATE, 2, RoundingMode.HALF_UP);
+        updated.setEuroPrice(euroPrice);
+
+
         if (dto.getImage() != null) {
-            existing.setImageData(Base64.getDecoder().decode(dto.getImage()));
+            updated.setImageData(Base64.getDecoder().decode(dto.getImage()));
         }
-        return mapper.map(repository.save(existing), ProductDTO.class);
+        updated.setId(id);
+        return mapper.map(repository.save(updated), ProductDTO.class);
     }
 
     public void delete(Long id) throws ChangeSetPersister.NotFoundException {
@@ -103,6 +109,14 @@ public class ProductService {
 
     public ProductDTO deletePromotion(Long id) throws ChangeSetPersister.NotFoundException {
         Product item = repository.findByIdAndDeletedFalse(id).orElseThrow(ChangeSetPersister.NotFoundException::new);
+
+        List<CartItem> cartItemList = cartItemRepository.findByProductAndDeletedFalse(item);
+
+        for (CartItem cartItem : cartItemList){
+            cartItem.setPrice(item.getPrice());
+            cartItem.setEuroPrice(item.getEuroPrice());
+            cartItemRepository.save(cartItem);
+        }
 
         item.setPromotion(false);
         item.setPercent(0);

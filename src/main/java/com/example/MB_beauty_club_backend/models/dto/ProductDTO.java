@@ -32,6 +32,7 @@ public class ProductDTO {
     private String image;
     @JsonIgnore
     private transient MultipartFile imageFile;
+    private boolean promotion;
     private int percent;
     private BigDecimal promotionPrice;
     private BigDecimal promotionEuroPrice;

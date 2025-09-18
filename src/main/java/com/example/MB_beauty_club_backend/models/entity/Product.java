@@ -47,6 +47,12 @@ public class Product {
     private String barcode;
     @Enumerated(EnumType.STRING)
     private ProductCategory productCategory;
+    @Column(name = "is_promoted")
+    private boolean promotion = false;
+    @Column(name = "percent")
+    private int percent;
+    private BigDecimal promotionPrice;
+    private BigDecimal promotionEuroPrice;
 
     @Lob
     @Column(columnDefinition = "MEDIUMBLOB", nullable = false)

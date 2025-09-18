@@ -21,6 +21,7 @@ public class CartItem {
     private Product product;
     private int quantity;
     private BigDecimal price;
+    private BigDecimal euroPrice;
     @Column(name = "is_deleted")
     private boolean deleted = false;
     @ManyToOne

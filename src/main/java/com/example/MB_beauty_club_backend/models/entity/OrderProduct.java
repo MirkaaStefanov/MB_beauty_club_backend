@@ -25,16 +25,22 @@ public class OrderProduct {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
-    private Integer number;
+    private int quantity;
     @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;
     @ManyToOne
     @JoinColumn(name = "order_id")
     private Order order;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
     @Column(name = "is_deleted")
     private boolean deleted = false;
-    @Column(name = "selling_price")
-    private BigDecimal sellingPrice;
+
+    private BigDecimal price;
+    private BigDecimal euroPrice;
 
 }

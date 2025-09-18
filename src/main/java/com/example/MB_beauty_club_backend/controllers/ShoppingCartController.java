@@ -23,8 +23,13 @@ public class ShoppingCartController {
     private final ShoppingCartService shoppingCartService;
 
     @PostMapping("/addToCart")
-    public void addToCart(@RequestParam("productId") Long productId, @RequestParam("quantity") int quantity, @RequestHeader("Authorization") String auth) throws ChangeSetPersister.NotFoundException {
+    public void addToCart(@RequestParam(value = "productId") Long productId, @RequestParam("quantity") int quantity, @RequestHeader("Authorization") String auth) throws Exception {
         shoppingCartService.addToCart(productId, quantity);
+    }
+
+    @PostMapping("/addToCartByBarcode")
+    public void addToCartByBarcode(@RequestParam(value = "barcode") String barcode, @RequestParam("quantity") int quantity, @RequestHeader("Authorization") String auth) throws Exception {
+        shoppingCartService.addToCartByBarcode(barcode, quantity);
     }
 
     @GetMapping("/showCart")

@@ -71,14 +71,4 @@ public class OrderProductService {
         orderProductRepository.save(order);
     }
 
-
-
-    public List<OrderProductDTO> getOrderProducts(Long orderId) throws ChangeSetPersister.NotFoundException {
-        Order order = orderRepository.findById(orderId).orElseThrow(ChangeSetPersister.NotFoundException::new);
-        List<OrderProduct> orderProducts = orderProductRepository.findAllByOrderIdAndDeletedFalse(order);
-        return orderProducts.stream()
-                .map(orderProduct -> modelMapper.map(orderProduct, OrderProductDTO.class))
-                .collect(Collectors.toList());
-    }
-
 }

@@ -11,5 +11,5 @@ public interface OrderProductRepository extends JpaRepository<OrderProduct, Long
     List<OrderProduct> findByDeletedFalse();
 
     Optional<OrderProduct> findByIdAndDeletedFalse(Long id);
-    List<OrderProduct> findAllByOrderIdAndDeletedFalse(Order order);
+    List<OrderProduct> findAllByOrderAndDeletedFalse(Order order);
 }

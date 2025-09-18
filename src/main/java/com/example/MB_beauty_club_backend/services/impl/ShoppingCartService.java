@@ -38,7 +38,7 @@ public class ShoppingCartService {
 
         ShoppingCart shoppingCart = shoppingCartRepository.findByUserAndDeletedFalse(authenticatedUser).orElseThrow(ChangeSetPersister.NotFoundException::new);
 
-        Product product = productRepository.findById(productId).orElseThrow(ChangeSetPersister.NotFoundException::new);
+        Product product = productRepository.findByIdAndDeletedFalse(productId).orElseThrow(ChangeSetPersister.NotFoundException::new);
 
         List<CartItem> cartItemList = cartItemRepository.findByShoppingCartAndDeletedFalse(shoppingCart);
         boolean ifProductIsInCart = false;
@@ -78,6 +78,56 @@ public class ShoppingCartService {
             cartItemRepository.save(cartItem);
         }
     }
+
+    public void addToCartByBarcode(String barcode, int quantity) throws ChangeSetPersister.NotFoundException {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        User authenticatedUser = userRepository.findByEmail(email).orElseThrow(ChangeSetPersister.NotFoundException::new);
+
+        ShoppingCart shoppingCart = shoppingCartRepository.findByUserAndDeletedFalse(authenticatedUser).orElseThrow(ChangeSetPersister.NotFoundException::new);
+
+        Product product = productRepository.findByBarcodeAndDeletedFalse(barcode).orElseThrow(ChangeSetPersister.NotFoundException::new);
+
+        List<CartItem> cartItemList = cartItemRepository.findByShoppingCartAndDeletedFalse(shoppingCart);
+        boolean ifProductIsInCart = false;
+
+
+        Optional<CartItem> optionalCartItem = cartItemRepository.findByProductAndShoppingCartAndDeletedFalse(product, shoppingCart);
+
+        if (optionalCartItem.isPresent()) {
+            CartItem cartItem = optionalCartItem.get();
+            if (cartItem.getQuantity() + quantity > product.getAvailableQuantity()) {
+                throw new IllegalArgumentException("There is no that much quantity");
+            } else {
+                cartItem.setQuantity(cartItem.getQuantity() + quantity);
+                cartItemRepository.save(cartItem);
+                ifProductIsInCart = true;
+            }
+        }
+
+        if (ifProductIsInCart == false) {
+            if (quantity > product.getAvailableQuantity()) {
+                throw new IllegalArgumentException("There is no that much quantity");
+            }
+            CartItem cartItem = new CartItem();
+            cartItem.setProduct(product);
+            if (cartItem.getQuantity() < 0) {
+                throw new ValidationException("Quantity must be more than 0");
+            }
+            cartItem.setQuantity(quantity);
+            if(product.isPromotion()){
+                cartItem.setPrice(product.getPromotionPrice());
+                cartItem.setEuroPrice(product.getPromotionEuroPrice());
+            }else{
+                cartItem.setPrice(product.getPrice());
+                cartItem.setEuroPrice(product.getEuroPrice());
+            }
+            cartItem.setShoppingCart(shoppingCart);
+            cartItemRepository.save(cartItem);
+        }
+    }
+
 
     public List<CartItemDTO> showCart() throws ChangeSetPersister.NotFoundException {
 

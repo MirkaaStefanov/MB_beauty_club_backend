@@ -1,17 +1,21 @@
 package com.example.MB_beauty_club_backend.services.impl;
 
 import com.example.MB_beauty_club_backend.enums.OrderStatus;
+import com.example.MB_beauty_club_backend.enums.Role;
+import com.example.MB_beauty_club_backend.exceptions.InsufficientStockException;
 import com.example.MB_beauty_club_backend.models.dto.CartItemDTO;
 import com.example.MB_beauty_club_backend.models.dto.OrderDTO;
 import com.example.MB_beauty_club_backend.models.dto.OrderProductDTO;
 import com.example.MB_beauty_club_backend.models.entity.CartItem;
 import com.example.MB_beauty_club_backend.models.entity.Order;
 import com.example.MB_beauty_club_backend.models.entity.OrderProduct;
+import com.example.MB_beauty_club_backend.models.entity.Product;
 import com.example.MB_beauty_club_backend.models.entity.ShoppingCart;
 import com.example.MB_beauty_club_backend.models.entity.User;
 import com.example.MB_beauty_club_backend.repositories.CartItemRepository;
 import com.example.MB_beauty_club_backend.repositories.OrderProductRepository;
 import com.example.MB_beauty_club_backend.repositories.OrderRepository;
+import com.example.MB_beauty_club_backend.repositories.ProductRepository;
 import com.example.MB_beauty_club_backend.repositories.ShoppingCartRepository;
 import com.example.MB_beauty_club_backend.repositories.UserRepository;
 import jakarta.validation.ValidationException;
@@ -25,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,6 +39,7 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderProductRepository orderProductRepository;
+    private final ProductRepository productRepository;
     private final ModelMapper modelMapper;
     private final ShoppingCartRepository shoppingCartRepository;
     private final UserRepository userRepository;
@@ -80,10 +86,28 @@ public class OrderService {
         ShoppingCart shoppingCart = shoppingCartRepository.findByUserAndDeletedFalse(authenticatedUser).orElseThrow(ChangeSetPersister.NotFoundException::new);
         List<CartItem> cartItemList = cartItemRepository.findByShoppingCartAndDeletedFalse(shoppingCart);
 
+        // Sort cart items by product ID to ensure deterministic locking
+        cartItemList.sort(Comparator.comparing(item -> item.getProduct().getId()));
+
+        // Check for sufficient stock and acquire locks in a single, ordered loop
+        for (CartItem cartItem : cartItemList) {
+            Product product = productRepository.findById(cartItem.getProduct().getId())
+                    .orElseThrow(() -> new InsufficientStockException("Product not found: " + cartItem.getProduct().getId()));
+
+            if (product.getAvailableQuantity() < cartItem.getQuantity()) {
+                throw new InsufficientStockException("Insufficient stock for product: " + product.getName() + ". Available: " + product.getAvailableQuantity());
+            }
+
+            // Reduce the stock and save the product, all within the transaction
+            product.setAvailableQuantity(product.getAvailableQuantity() - cartItem.getQuantity());
+            productRepository.save(product);
+        }
+
+        // Now that stock is confirmed and reduced, create the order and order products
         Order order = new Order();
         order.setUser(authenticatedUser);
         order.setOrderDate(LocalDate.now());
-        if (authenticatedUser.getRole().equals("ADMIN")) {
+        if (authenticatedUser.getRole().equals(Role.ADMIN)) {
             order.setStatus(OrderStatus.DONE);
         } else {
             order.setStatus(OrderStatus.PENDING);
@@ -110,13 +134,12 @@ public class OrderService {
             orderProduct.setQuantity(cartItem.getQuantity());
             orderProduct.setPrice(cartItem.getPrice());
             orderProduct.setEuroPrice(cartItem.getEuroPrice());
+
             orderProductRepository.save(orderProduct);
         }
 
-
-
+        // Finally, delete the cart items
         cartItemRepository.deleteAll(cartItemRepository.findByShoppingCartAndDeletedFalse(shoppingCart));
-
     }
 
     public OrderDTO updateOrder(UUID id, OrderDTO orderDTO) throws ChangeSetPersister.NotFoundException {

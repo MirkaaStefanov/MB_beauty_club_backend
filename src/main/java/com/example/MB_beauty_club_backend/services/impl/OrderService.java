@@ -21,6 +21,7 @@ import com.example.MB_beauty_club_backend.repositories.UserRepository;
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -47,6 +48,10 @@ public class OrderService {
     private final UserRepository userRepository;
     private final CartItemRepository cartItemRepository;
     private final ShoppingCartService shoppingCartService;
+    private MailService mailService;
+
+    @Value("${spring.security.mail.admin}")
+    private String adminEmail;
 
     public List<OrderDTO> getAllOrders() {
         List<Order> orders = orderRepository.findByDeletedFalse();

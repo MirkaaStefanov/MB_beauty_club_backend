@@ -30,5 +30,7 @@ public class AppointmentDTO {
     private LocalDateTime endTime;
     private AppointmentStatus status = AppointmentStatus.PENDING;
     private boolean deleted;
+    private String username;
+    private String phoneNumber;
 
 }

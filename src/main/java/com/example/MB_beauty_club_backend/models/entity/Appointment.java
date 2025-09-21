@@ -29,6 +29,9 @@ public class Appointment {
     @JoinColumn(name = "user_id")
     private User user;
 
+    private String username;
+    private String phoneNumber;
+
     // Which service is chosen
     @ManyToOne
     @JoinColumn(name = "service_id")

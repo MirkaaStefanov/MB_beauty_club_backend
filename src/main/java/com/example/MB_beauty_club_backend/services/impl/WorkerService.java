@@ -11,6 +11,8 @@ import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.crossstore.ChangeSetPersister;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -78,6 +80,16 @@ public class WorkerService {
         return workers.stream()
                 .map(x -> modelMapper.map(x, WorkerDTO.class))
                 .toList();
+    }
+
+    public WorkerDTO findAuthenticatedWorker() throws ChangeSetPersister.NotFoundException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        User authenticatedUser = userRepository.findByEmail(email).orElseThrow(ChangeSetPersister.NotFoundException::new);
+
+        Worker worker = workerRepository.findByUserAndDeletedFalse(authenticatedUser).orElseThrow(ChangeSetPersister.NotFoundException::new);
+
+        return modelMapper.map(worker, WorkerDTO.class);
     }
 
 

@@ -62,7 +62,9 @@ public class AppointmentService {
 
         Appointment appointment = modelMapper.map(appointmentDTO, Appointment.class);
         appointment.setWorker(worker);
-        appointment.setUser(user);
+        if(appointment.getUsername() == null){
+            appointment.setUser(user);
+        }
         appointment.setService(service);
         appointment.setEndTime(appointment.getStartTime().plusMinutes(service.getDuration()));
 

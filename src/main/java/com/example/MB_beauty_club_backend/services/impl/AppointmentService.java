@@ -56,13 +56,17 @@ public class AppointmentService {
         com.example.MB_beauty_club_backend.models.entity.Service service = serviceRepository.findById(appointmentDTO.getService().getId())
                 .orElseThrow(() -> new ChangeSetPersister.NotFoundException());
 
-        if (appointmentDTO.getStartTime().isBefore(LocalDate.now().atStartOfDay())){
-            throw  new Exception();
+
+        if (appointmentDTO.getStartTime().isBefore(LocalDate.now().atStartOfDay())) {
+            throw new Exception();
         }
 
         Appointment appointment = modelMapper.map(appointmentDTO, Appointment.class);
         appointment.setWorker(worker);
-        if(appointment.getUsername() == null){
+        if (user.getRole().equals(Role.WORKER)) {
+            appointment.setStatus(AppointmentStatus.CONFIRMED);
+        }
+        if (appointment.getUsername() == null) {
             appointment.setUser(user);
         }
         appointment.setService(service);
@@ -102,7 +106,7 @@ public class AppointmentService {
                     .collect(Collectors.toList());
         }
 
-        if(authenticatedUser.getRole().equals(Role.USER)) {
+        if (authenticatedUser.getRole().equals(Role.USER)) {
             return appointmentRepository.findByUserAndDeletedFalse(authenticatedUser).stream()
                     .map(appointment -> modelMapper.map(appointment, AppointmentDTO.class))
                     .collect(Collectors.toList());

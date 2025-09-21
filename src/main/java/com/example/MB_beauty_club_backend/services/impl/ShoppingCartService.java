@@ -53,7 +53,7 @@ public class ShoppingCartService {
         if (optionalCartItem.isPresent()) {
             CartItem cartItem = optionalCartItem.get();
             if (cartItem.getQuantity() + quantity > product.getAvailableQuantity()) {
-                throw new IllegalArgumentException("There is no that much quantity");
+                throw new InsufficientStockException("Няма толкова количество в наличност");
             } else {
                 cartItem.setQuantity(cartItem.getQuantity() + quantity);
                 cartItemRepository.save(cartItem);
@@ -63,12 +63,12 @@ public class ShoppingCartService {
 
         if (ifProductIsInCart == false) {
             if (quantity > product.getAvailableQuantity()) {
-                throw new IllegalArgumentException("There is no that much quantity");
+                throw new InsufficientStockException("Няма толкова количество в наличност");
             }
             CartItem cartItem = new CartItem();
             cartItem.setProduct(product);
             if (cartItem.getQuantity() < 0) {
-                throw new ValidationException("Quantity must be more than 0");
+                throw new InsufficientStockException("Количеството трябва да е повече 0");
             }
             cartItem.setQuantity(quantity);
             if(product.isPromotion()){
@@ -102,7 +102,7 @@ public class ShoppingCartService {
         if (optionalCartItem.isPresent()) {
             CartItem cartItem = optionalCartItem.get();
             if (cartItem.getQuantity() + quantity > product.getAvailableQuantity()) {
-                throw new IllegalArgumentException("There is no that much quantity");
+                throw new InsufficientStockException("Няма толкова количество в наличност");
             } else {
                 cartItem.setQuantity(cartItem.getQuantity() + quantity);
                 cartItemRepository.save(cartItem);
@@ -112,12 +112,12 @@ public class ShoppingCartService {
 
         if (ifProductIsInCart == false) {
             if (quantity > product.getAvailableQuantity()) {
-                throw new IllegalArgumentException("There is no that much quantity");
+                throw new InsufficientStockException("Няма толкова количество в наличност");
             }
             CartItem cartItem = new CartItem();
             cartItem.setProduct(product);
             if (cartItem.getQuantity() < 0) {
-                throw new ValidationException("Quantity must be more than 0");
+                throw new InsufficientStockException("Количеството трябва да е повече 0");
             }
             cartItem.setQuantity(quantity);
             if(product.isPromotion()){
@@ -164,11 +164,11 @@ public class ShoppingCartService {
 
     public void updateQuantityOfItem(Long cartItemId, int quantity) throws ChangeSetPersister.NotFoundException {
         if (quantity <= 0) {
-            throw new IllegalArgumentException("quantity must be more than 0");
+            throw new InsufficientStockException("Количеството трябва да е повече 0");
         }
         CartItem cartItem = cartItemRepository.findByIdAndDeletedFalse(cartItemId).orElseThrow(ChangeSetPersister.NotFoundException::new);
         if (quantity > cartItem.getProduct().getAvailableQuantity()) {
-            throw new IllegalArgumentException("There is no that much quantity");
+            throw new InsufficientStockException("Няма толкова количество в наличност");
         }
         cartItem.setQuantity(quantity);
         cartItemRepository.save(cartItem);

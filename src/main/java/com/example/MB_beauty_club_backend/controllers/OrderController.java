@@ -5,6 +5,7 @@ import com.example.MB_beauty_club_backend.models.dto.OrderDTO;
 import com.example.MB_beauty_club_backend.models.dto.OrderProductDTO;
 import com.example.MB_beauty_club_backend.models.entity.Order;
 import com.example.MB_beauty_club_backend.services.impl.OrderService;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
@@ -45,7 +46,7 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> createOrder(@RequestHeader("Authorization") String auth) throws InsufficientStockException, ChangeSetPersister.NotFoundException {
+    public ResponseEntity<Void> createOrder(@RequestHeader("Authorization") String auth) throws InsufficientStockException, ChangeSetPersister.NotFoundException, MessagingException {
         orderService.createOrder();
         return new ResponseEntity<>(HttpStatus.CREATED);
     }

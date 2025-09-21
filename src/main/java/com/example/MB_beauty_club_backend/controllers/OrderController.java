@@ -1,5 +1,6 @@
 package com.example.MB_beauty_club_backend.controllers;
 
+import com.example.MB_beauty_club_backend.exceptions.InsufficientStockException;
 import com.example.MB_beauty_club_backend.models.dto.OrderDTO;
 import com.example.MB_beauty_club_backend.models.dto.OrderProductDTO;
 import com.example.MB_beauty_club_backend.models.entity.Order;
@@ -44,7 +45,7 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> createOrder(@RequestHeader("Authorization") String auth) throws ChangeSetPersister.NotFoundException {
+    public ResponseEntity<Void> createOrder(@RequestHeader("Authorization") String auth) throws InsufficientStockException, ChangeSetPersister.NotFoundException {
         orderService.createOrder();
         return new ResponseEntity<>(HttpStatus.CREATED);
     }

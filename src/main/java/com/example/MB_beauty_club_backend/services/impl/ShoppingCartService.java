@@ -1,5 +1,6 @@
 package com.example.MB_beauty_club_backend.services.impl;
 
+import com.example.MB_beauty_club_backend.exceptions.InsufficientStockException;
 import com.example.MB_beauty_club_backend.models.dto.CartItemDTO;
 import com.example.MB_beauty_club_backend.models.entity.CartItem;
 import com.example.MB_beauty_club_backend.models.entity.Product;
@@ -16,7 +17,10 @@ import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -168,6 +172,27 @@ public class ShoppingCartService {
         }
         cartItem.setQuantity(quantity);
         cartItemRepository.save(cartItem);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public String validateAndCorrectCartItems(List<CartItem> cartItemList) throws ChangeSetPersister.NotFoundException {
+        List<String> adjustmentMessages = new ArrayList<>();
+        for (CartItem cartItem : cartItemList) {
+            Product product = productRepository.findByIdWithLock(cartItem.getProduct().getId())
+                    .orElseThrow(() -> new InsufficientStockException("Product not found: " + cartItem.getProduct().getId()));
+
+            if (product.getAvailableQuantity() < cartItem.getQuantity()) {
+                if (product.getAvailableQuantity() == 0) {
+                    cartItemRepository.delete(cartItem);
+                    adjustmentMessages.add("Продукт '" + product.getName() + "' не е наличен и е премахнат от количката.");
+                } else {
+                    cartItem.setQuantity(product.getAvailableQuantity());
+                    cartItemRepository.save(cartItem);
+                    adjustmentMessages.add("Количеството за '" + product.getName() + "' беше намалено на: " + product.getAvailableQuantity()+" поради намалена наличност");
+                }
+            }
+        }
+        return String.join(". ", adjustmentMessages);
     }
 
 }

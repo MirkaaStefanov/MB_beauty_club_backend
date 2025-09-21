@@ -2,6 +2,7 @@ package com.example.MB_beauty_club_backend.repositories;
 
 import com.example.MB_beauty_club_backend.models.entity.Order;
 import com.example.MB_beauty_club_backend.models.entity.User;
+import org.aspectj.weaver.ast.Or;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -15,6 +16,8 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
 
     Optional<Order> findByIdAndDeletedFalse(UUID id);
     List<Order> findAllByUserAndDeletedFalse(User user);
+
+    Optional<Order> findByOrderNumberAndDeletedFalse(String orderNumber);
 
 
 

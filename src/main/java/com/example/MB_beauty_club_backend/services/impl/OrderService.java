@@ -29,8 +29,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 @Service
@@ -44,6 +46,7 @@ public class OrderService {
     private final ShoppingCartRepository shoppingCartRepository;
     private final UserRepository userRepository;
     private final CartItemRepository cartItemRepository;
+    private final ShoppingCartService shoppingCartService;
 
     public List<OrderDTO> getAllOrders() {
         List<Order> orders = orderRepository.findByDeletedFalse();
@@ -76,9 +79,9 @@ public class OrderService {
         }
     }
 
-    @Transactional
-    public void createOrder() throws ChangeSetPersister.NotFoundException {
 
+    @Transactional
+    public void createOrder() throws InsufficientStockException, ChangeSetPersister.NotFoundException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         User authenticatedUser = userRepository.findByEmail(email).orElseThrow(ChangeSetPersister.NotFoundException::new);
@@ -86,19 +89,27 @@ public class OrderService {
         ShoppingCart shoppingCart = shoppingCartRepository.findByUserAndDeletedFalse(authenticatedUser).orElseThrow(ChangeSetPersister.NotFoundException::new);
         List<CartItem> cartItemList = cartItemRepository.findByShoppingCartAndDeletedFalse(shoppingCart);
 
-        // Sort cart items by product ID to ensure deterministic locking
-        cartItemList.sort(Comparator.comparing(item -> item.getProduct().getId()));
+        if (cartItemList.isEmpty()) {
+            throw new InsufficientStockException("Your shopping cart is empty.");
+        }
 
-        // Check for sufficient stock and acquire locks in a single, ordered loop
-        for (CartItem cartItem : cartItemList) {
-            Product product = productRepository.findById(cartItem.getProduct().getId())
+        // Validate and correct cart items in a separate transaction
+        String validationMessage = shoppingCartService.validateAndCorrectCartItems(cartItemList);
+        if (!validationMessage.isEmpty()) {
+            throw new InsufficientStockException(validationMessage);
+        }
+
+        // After validation, re-fetch the possibly modified cart items
+        List<CartItem> finalCartItemList = cartItemRepository.findByShoppingCartAndDeletedFalse(shoppingCart);
+
+        // Sort cart items by product ID to ensure deterministic locking and stock reduction
+        finalCartItemList.sort(Comparator.comparing(item -> item.getProduct().getId()));
+
+        // Reduce stock for confirmed items
+        for (CartItem cartItem : finalCartItemList) {
+            Product product = productRepository.findByIdWithLock(cartItem.getProduct().getId())
                     .orElseThrow(() -> new InsufficientStockException("Product not found: " + cartItem.getProduct().getId()));
 
-            if (product.getAvailableQuantity() < cartItem.getQuantity()) {
-                throw new InsufficientStockException("Insufficient stock for product: " + product.getName() + ". Available: " + product.getAvailableQuantity());
-            }
-
-            // Reduce the stock and save the product, all within the transaction
             product.setAvailableQuantity(product.getAvailableQuantity() - cartItem.getQuantity());
             productRepository.save(product);
         }
@@ -113,11 +124,13 @@ public class OrderService {
             order.setStatus(OrderStatus.PENDING);
         }
 
-        BigDecimal totalLeva = cartItemList.stream()
+        order.setOrderNumber(generateUniqueOrderNumber());
+
+        BigDecimal totalLeva = finalCartItemList.stream()
                 .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        BigDecimal totalEuro = cartItemList.stream()
+        BigDecimal totalEuro = finalCartItemList.stream()
                 .map(item -> item.getEuroPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
@@ -126,7 +139,7 @@ public class OrderService {
 
         orderRepository.save(order);
 
-        for (CartItem cartItem : cartItemList) {
+        for (CartItem cartItem : finalCartItemList) {
             OrderProduct orderProduct = new OrderProduct();
             orderProduct.setOrder(order);
             orderProduct.setUser(authenticatedUser);
@@ -141,6 +154,7 @@ public class OrderService {
         // Finally, delete the cart items
         cartItemRepository.deleteAll(cartItemRepository.findByShoppingCartAndDeletedFalse(shoppingCart));
     }
+
 
     public OrderDTO updateOrder(UUID id, OrderDTO orderDTO) throws ChangeSetPersister.NotFoundException {
         validateOrderDTO(orderDTO);
@@ -173,6 +187,20 @@ public class OrderService {
         List<Order> orders = orderRepository.findAllByUserAndDeletedFalse(authenticatedUser);
 
         return orders.stream().map(order -> modelMapper.map(order, OrderDTO.class)).toList();
+    }
+
+
+    private String generateUniqueOrderNumber() {
+        Random random = new Random();
+        int min = 100000;
+        int max = 999999;
+        String orderNumber;
+
+        do {
+            orderNumber = String.valueOf(random.nextInt(max - min + 1) + min);
+        } while (orderRepository.findByOrderNumberAndDeletedFalse(orderNumber).isPresent());
+
+        return orderNumber;
     }
 
 }

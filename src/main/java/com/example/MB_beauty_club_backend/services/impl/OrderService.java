@@ -18,9 +18,11 @@ import com.example.MB_beauty_club_backend.repositories.OrderRepository;
 import com.example.MB_beauty_club_backend.repositories.ProductRepository;
 import com.example.MB_beauty_club_backend.repositories.ShoppingCartRepository;
 import com.example.MB_beauty_club_backend.repositories.UserRepository;
+import jakarta.mail.MessagingException;
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -47,6 +49,10 @@ public class OrderService {
     private final UserRepository userRepository;
     private final CartItemRepository cartItemRepository;
     private final ShoppingCartService shoppingCartService;
+    private final MailService mailService;
+
+    @Value("${spring.security.mail.admin}")
+    private String adminEmail;
 
     public List<OrderDTO> getAllOrders() {
         List<Order> orders = orderRepository.findByDeletedFalse();
@@ -81,7 +87,7 @@ public class OrderService {
 
 
     @Transactional
-    public void createOrder() throws InsufficientStockException, ChangeSetPersister.NotFoundException {
+    public void createOrder() throws InsufficientStockException, ChangeSetPersister.NotFoundException, MessagingException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         User authenticatedUser = userRepository.findByEmail(email).orElseThrow(ChangeSetPersister.NotFoundException::new);
@@ -105,6 +111,7 @@ public class OrderService {
         // Sort cart items by product ID to ensure deterministic locking and stock reduction
         finalCartItemList.sort(Comparator.comparing(item -> item.getProduct().getId()));
 
+        List<Product> lowStockProducts = new ArrayList<>();
         // Reduce stock for confirmed items
         for (CartItem cartItem : finalCartItemList) {
             Product product = productRepository.findByIdWithLock(cartItem.getProduct().getId())
@@ -112,6 +119,14 @@ public class OrderService {
 
             product.setAvailableQuantity(product.getAvailableQuantity() - cartItem.getQuantity());
             productRepository.save(product);
+
+            if (product.getAvailableQuantity() < 10) {
+                lowStockProducts.add(product);
+            }
+        }
+
+        if (!lowStockProducts.isEmpty()) {
+            mailService.sendLowStockReport(lowStockProducts);
         }
 
         // Now that stock is confirmed and reduced, create the order and order products

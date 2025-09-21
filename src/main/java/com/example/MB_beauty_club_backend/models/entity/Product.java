@@ -33,7 +33,7 @@ public class Product {
     private BigDecimal price;
     private BigDecimal euroPrice;
     @Column(name = "available_quantity")
-    @Min(value = 1, message = "Наличните бройки не могат да бъдат отрицателно число!")
+    @Min(value = 0, message = "Наличните бройки не могат да бъдат отрицателно число!")
     private int availableQuantity;
     @Column(name = "is_deleted")
     private boolean deleted = false;

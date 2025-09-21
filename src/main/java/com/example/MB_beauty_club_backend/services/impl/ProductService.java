@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -84,6 +85,7 @@ public class ProductService {
         return mapper.map(repository.save(item), ProductDTO.class);
     }
 
+    @Transactional
     public ProductDTO createPromotion(Long id, int percent) throws ChangeSetPersister.NotFoundException {
         Product item = repository.findByIdAndDeletedFalse(id).orElseThrow(ChangeSetPersister.NotFoundException::new);
 
@@ -104,9 +106,20 @@ public class ProductService {
         item.setPromotionPrice(newPrice);
         item.setPromotionEuroPrice(newEuroPrice);
 
+
+        List<CartItem> cartItemList = cartItemRepository.findByProductAndDeletedFalse(item);
+
+        for (CartItem cartItem : cartItemList){
+            cartItem.setPrice(item.getPromotionPrice());
+            cartItem.setEuroPrice(item.getEuroPrice());
+            cartItemRepository.save(cartItem);
+        }
+
+
         return mapper.map(repository.save(item), ProductDTO.class);
     }
 
+    @Transactional
     public ProductDTO deletePromotion(Long id) throws ChangeSetPersister.NotFoundException {
         Product item = repository.findByIdAndDeletedFalse(id).orElseThrow(ChangeSetPersister.NotFoundException::new);
 

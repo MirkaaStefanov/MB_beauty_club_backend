@@ -10,11 +10,16 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.GenericGenerator;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Random;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -22,9 +27,10 @@ import java.time.LocalDate;
 @Table(name = "orders")
 public class Order {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Long id;
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "id", updatable = false, nullable = false, columnDefinition = "BINARY(16)")
+    private UUID id;
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
@@ -35,4 +41,10 @@ public class Order {
     private boolean invoiced;
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
+
+    private BigDecimal price;
+    private BigDecimal euroPrice;
+
+    @Column(name = "order_number", unique = true, nullable = false)
+    private String orderNumber;
 }

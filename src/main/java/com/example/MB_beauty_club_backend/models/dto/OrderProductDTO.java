@@ -1,10 +1,6 @@
 package com.example.MB_beauty_club_backend.models.dto;
 
-import com.example.MB_beauty_club_backend.models.entity.Order;
-import com.example.MB_beauty_club_backend.models.entity.Product;
-import jakarta.persistence.Column;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import com.example.MB_beauty_club_backend.models.dto.auth.PublicUserDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,10 +15,12 @@ import java.math.BigDecimal;
 public class OrderProductDTO {
 
     private Long id;
-    private Integer number;
+    private int quantity;
     private ProductDTO product;
     private OrderDTO order;
+    private PublicUserDTO user;
     private boolean deleted;
-    private BigDecimal sellingPrice;
+    private BigDecimal price;
+    private BigDecimal euroPrice;
 
 }

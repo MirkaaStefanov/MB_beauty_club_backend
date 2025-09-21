@@ -13,7 +13,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -21,11 +23,14 @@ import java.time.LocalDate;
 @Builder
 public class OrderDTO {
 
-    private Long id;
+    private UUID id;
     private PublicUserDTO user;
     private LocalDate orderDate;
     private boolean deleted;
     private boolean invoiced;
     private OrderStatus status;
+    private BigDecimal price;
+    private BigDecimal euroPrice;
+    private String orderNumber;
 
 }

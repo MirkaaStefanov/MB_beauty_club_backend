@@ -4,6 +4,8 @@ import com.example.MB_beauty_club_backend.exceptions.InsufficientStockException;
 import com.example.MB_beauty_club_backend.models.dto.OrderDTO;
 import com.example.MB_beauty_club_backend.models.dto.OrderProductDTO;
 import com.example.MB_beauty_club_backend.models.entity.Order;
+import com.example.MB_beauty_club_backend.models.entity.OrderProduct;
+import com.example.MB_beauty_club_backend.services.impl.OrderProductService;
 import com.example.MB_beauty_club_backend.services.impl.OrderService;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
@@ -29,10 +31,16 @@ import java.util.UUID;
 public class OrderController {
 
     private final OrderService orderService;
+    private final OrderProductService orderProductService;
 
     @GetMapping
     public ResponseEntity<List<OrderDTO>> getAllOrders( @RequestHeader("Authorization") String auth) {
         return ResponseEntity.ok(orderService.getAllOrders());
+    }
+
+    @GetMapping("/orderProducts")
+    public ResponseEntity<List<OrderProductDTO>> allOrderProducts(@RequestHeader("Authorization") String auth){
+        return ResponseEntity.ok(orderProductService.getAllOrderProducts());
     }
 
     @GetMapping("/{id}")

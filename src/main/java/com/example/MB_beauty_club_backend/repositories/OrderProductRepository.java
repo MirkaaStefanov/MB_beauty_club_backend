@@ -12,4 +12,5 @@ public interface OrderProductRepository extends JpaRepository<OrderProduct, Long
 
     Optional<OrderProduct> findByIdAndDeletedFalse(Long id);
     List<OrderProduct> findAllByOrderAndDeletedFalse(Order order);
+
 }

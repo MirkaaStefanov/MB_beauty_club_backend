@@ -109,7 +109,7 @@ public class ProductService {
 
         List<CartItem> cartItemList = cartItemRepository.findByProductAndDeletedFalse(item);
 
-        for (CartItem cartItem : cartItemList){
+        for (CartItem cartItem : cartItemList) {
             cartItem.setPrice(item.getPromotionPrice());
             cartItem.setEuroPrice(item.getEuroPrice());
             cartItemRepository.save(cartItem);
@@ -125,7 +125,7 @@ public class ProductService {
 
         List<CartItem> cartItemList = cartItemRepository.findByProductAndDeletedFalse(item);
 
-        for (CartItem cartItem : cartItemList){
+        for (CartItem cartItem : cartItemList) {
             cartItem.setPrice(item.getPrice());
             cartItem.setEuroPrice(item.getEuroPrice());
             cartItemRepository.save(cartItem);
@@ -135,6 +135,19 @@ public class ProductService {
         item.setPercent(0);
         item.setPromotionPrice(null);
         item.setPromotionEuroPrice(null);
+
+        return mapper.map(repository.save(item), ProductDTO.class);
+    }
+
+    @Transactional
+    public ProductDTO restock(Long id, int quantity) throws ChangeSetPersister.NotFoundException {
+        Product item = repository.findByIdAndDeletedFalse(id).orElseThrow(ChangeSetPersister.NotFoundException::new);
+
+        if (quantity < 0) {
+            throw new IllegalArgumentException("Quantity must be greater than 0");
+        }
+
+        item.setAvailableQuantity(item.getAvailableQuantity() + quantity);
 
         return mapper.map(repository.save(item), ProductDTO.class);
     }

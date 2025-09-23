@@ -27,10 +27,7 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping
-    public ResponseEntity<List<ProductDTO>> getAllProducts(
-            @RequestParam(required = false) Boolean forSale,
-            @RequestParam(required = false) ProductCategory category,
-            @RequestHeader(value = "Authorization", required = false) String auth) {
+    public ResponseEntity<List<ProductDTO>> getAllProducts(@RequestParam(required = false) Boolean forSale, @RequestParam(required = false) ProductCategory category, @RequestHeader(value = "Authorization", required = false) String auth) {
         return ResponseEntity.ok(productService.findAll(forSale, category));
     }
 
@@ -45,12 +42,12 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ProductDTO> update(@PathVariable Long id, @RequestBody ProductDTO dto,  @RequestHeader(value = "Authorization", required = false) String auth) {
+    public ResponseEntity<ProductDTO> update(@PathVariable Long id, @RequestBody ProductDTO dto, @RequestHeader(value = "Authorization", required = false) String auth) {
         return ResponseEntity.ok(productService.update(id, dto));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id,  @RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException {
+    public ResponseEntity<Void> delete(@PathVariable Long id, @RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException {
         productService.delete(id);
         return ResponseEntity.noContent().build();
     }
@@ -61,20 +58,20 @@ public class ProductController {
     }
 
     @PutMapping("/{id}/promote/{percent}")
-    public ResponseEntity<ProductDTO> createPromotion(
-            @PathVariable Long id,
-            @PathVariable int percent,
-            @RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException {
+    public ResponseEntity<ProductDTO> createPromotion(@PathVariable Long id, @PathVariable int percent, @RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException {
 
         return ResponseEntity.ok(productService.createPromotion(id, percent));
     }
 
     @DeleteMapping("/{id}/promote")
-    public ResponseEntity<ProductDTO> deletePromotion(
-            @PathVariable Long id,
-            @RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException {
+    public ResponseEntity<ProductDTO> deletePromotion(@PathVariable Long id, @RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException {
 
         return ResponseEntity.ok(productService.deletePromotion(id));
+    }
+
+    @PutMapping("/{id}/restock/{quantity}")
+    public ResponseEntity<ProductDTO> restock(@PathVariable Long id, @PathVariable int quantity, @RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException {
+        return ResponseEntity.ok(productService.restock(id, quantity));
     }
 
 }

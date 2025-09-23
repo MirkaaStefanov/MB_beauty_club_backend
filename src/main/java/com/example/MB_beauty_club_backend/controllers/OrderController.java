@@ -79,4 +79,10 @@ public class OrderController {
     public ResponseEntity<List<OrderDTO>> getAllOrdersForAuthenticatedUser(@RequestHeader("Authorization") String auth) throws ChangeSetPersister.NotFoundException {
         return ResponseEntity.ok(orderService.getAllOrdersForAuthenticatedUser());
     }
+
+    @PostMapping("/updateStatus/{id}")
+    public ResponseEntity<OrderDTO> updateStatus(@PathVariable UUID id, @RequestHeader("Authorization") String auth) throws ChangeSetPersister.NotFoundException {
+        orderService.updateStatus(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }

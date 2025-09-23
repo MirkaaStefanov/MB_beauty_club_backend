@@ -218,4 +218,17 @@ public class OrderService {
         return orderNumber;
     }
 
+    public OrderDTO updateStatus(UUID id) throws ChangeSetPersister.NotFoundException {
+        Order order = orderRepository.findByIdAndDeletedFalse(id).orElseThrow(ChangeSetPersister.NotFoundException::new);
+
+        if (order.getStatus().equals(OrderStatus.PENDING)) {
+            order.setStatus(OrderStatus.DELIVER);
+        } else if (order.getStatus().equals(OrderStatus.DELIVER)) {
+            order.setStatus(OrderStatus.DONE);
+        }
+
+        return modelMapper.map(orderRepository.save(order), OrderDTO.class);
+
+    }
+
 }

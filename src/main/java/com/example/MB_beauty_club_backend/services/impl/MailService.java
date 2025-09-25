@@ -6,11 +6,13 @@ import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.util.Base64;
 import java.util.List;
 
@@ -70,4 +72,25 @@ public class MailService {
         helper.setText(htmlContent.toString(), true);
         mailSender.send(mimeMessage);
     }
+
+    public void sendDatabaseBackup(File backupFile) throws MessagingException {
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        // Set 'multipart' to true because we are adding an attachment
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+        helper.setTo(adminEmail);
+        helper.setSubject("💾 Ежедневен бекъп на база данни: " + backupFile.getName());
+
+        String htmlContent = "<h2>Ежедневен бекъп на база данни</h2>" +
+                "<p>Прикаченият файл съдържа пълния SQL бекъп на базата данни.</p>" +
+                "<p>Дата: " + java.time.LocalDate.now() + "</p>";
+        helper.setText(htmlContent, true);
+
+        // Attach the file
+        FileSystemResource file = new FileSystemResource(backupFile);
+        helper.addAttachment(backupFile.getName(), file);
+
+        mailSender.send(mimeMessage);
+    }
+
 }

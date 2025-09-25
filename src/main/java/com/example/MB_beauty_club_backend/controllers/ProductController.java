@@ -2,7 +2,10 @@ package com.example.MB_beauty_club_backend.controllers;
 
 import com.example.MB_beauty_club_backend.enums.ProductCategory;
 import com.example.MB_beauty_club_backend.models.dto.ProductDTO;
+import com.example.MB_beauty_club_backend.services.impl.DatabaseBackupService;
+import com.example.MB_beauty_club_backend.services.impl.MailService;
 import com.example.MB_beauty_club_backend.services.impl.ProductService;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -25,6 +30,9 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+
+    private final MailService mailService;
+    private final DatabaseBackupService databaseBackupService;
 
     @GetMapping
     public ResponseEntity<List<ProductDTO>> getAllProducts(@RequestParam(required = false) Boolean forSale, @RequestParam(required = false) ProductCategory category, @RequestHeader(value = "Authorization", required = false) String auth) {
@@ -72,6 +80,14 @@ public class ProductController {
     @PutMapping("/{id}/restock/{quantity}")
     public ResponseEntity<ProductDTO> restock(@PathVariable Long id, @PathVariable int quantity, @RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException {
         return ResponseEntity.ok(productService.restock(id, quantity));
+    }
+
+    @PostMapping("/export-database")
+    public ResponseEntity<Void> exportDatabase(@RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException, IOException, InterruptedException, MessagingException {
+
+        File backupFile = databaseBackupService.exportDatabase();
+        mailService.sendDatabaseBackup(backupFile);
+        return ResponseEntity.noContent().build();
     }
 
 }

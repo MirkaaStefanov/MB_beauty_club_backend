@@ -34,12 +34,12 @@ public class OrderController {
     private final OrderProductService orderProductService;
 
     @GetMapping
-    public ResponseEntity<List<OrderDTO>> getAllOrders( @RequestHeader("Authorization") String auth) {
+    public ResponseEntity<List<OrderDTO>> getAllOrders(@RequestHeader("Authorization") String auth) {
         return ResponseEntity.ok(orderService.getAllOrders());
     }
 
     @GetMapping("/orderProducts")
-    public ResponseEntity<List<OrderProductDTO>> allOrderProducts(@RequestHeader("Authorization") String auth){
+    public ResponseEntity<List<OrderProductDTO>> allOrderProducts(@RequestHeader("Authorization") String auth) {
         return ResponseEntity.ok(orderProductService.getAllOrderProducts());
     }
 
@@ -49,15 +49,27 @@ public class OrderController {
     }
 
     @GetMapping("/{id}/products")
-    public ResponseEntity<List<OrderProductDTO>> findOrderProductsForOrder(@PathVariable UUID id,  @RequestHeader("Authorization") String auth) throws ChangeSetPersister.NotFoundException {
+    public ResponseEntity<List<OrderProductDTO>> findOrderProductsForOrder(@PathVariable UUID id, @RequestHeader("Authorization") String auth) throws ChangeSetPersister.NotFoundException {
         return ResponseEntity.ok(orderService.findOrderProductsForOrder(id));
     }
 
     @PostMapping
-    public ResponseEntity<Void> createOrder(@RequestHeader("Authorization") String auth) throws InsufficientStockException, ChangeSetPersister.NotFoundException, MessagingException {
-        orderService.createOrder();
-        return new ResponseEntity<>(HttpStatus.CREATED);
+    public ResponseEntity<OrderDTO> createOrder(@RequestHeader("Authorization") String auth) throws InsufficientStockException, ChangeSetPersister.NotFoundException, MessagingException {
+        return ResponseEntity.ok(orderService.createOrder());
     }
+
+    @PostMapping("/cancelOrder/{id}")
+    public ResponseEntity<Void> cancelOrder(@PathVariable UUID id, @RequestHeader("Authorization") String auth) throws ChangeSetPersister.NotFoundException {
+        orderService.cancelOrder(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping("/paymentSuccessful/{id}")
+    public ResponseEntity<Void> successPayment(@PathVariable UUID id, @RequestHeader("Authorization") String auth) throws ChangeSetPersister.NotFoundException, MessagingException {
+        orderService.orderPaySuccess(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
 
     @PutMapping("/{id}")
     public ResponseEntity<OrderDTO> updateOrder(@PathVariable UUID id, @RequestBody OrderDTO orderDTO, @RequestHeader("Authorization") String auth) throws ChangeSetPersister.NotFoundException {

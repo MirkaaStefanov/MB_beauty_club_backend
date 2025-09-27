@@ -63,3 +63,7 @@ application:
     mysqldump-path: /Applications/XAMPP/xamppfiles/bin/mysqldump
     output-dir: /tmp/db_backups
     database-name: MB_beauty_club
+
+stripe:
+  secret-key: ${STRIPE_SECRET_KEY}
+  public-key: ${STRIPE_PUBLIC_KEY}

@@ -87,7 +87,7 @@ public class OrderService {
 
 
     @Transactional
-    public void createOrder() throws InsufficientStockException, ChangeSetPersister.NotFoundException, MessagingException {
+    public OrderDTO createOrder() throws InsufficientStockException, ChangeSetPersister.NotFoundException, MessagingException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         User authenticatedUser = userRepository.findByEmail(email).orElseThrow(ChangeSetPersister.NotFoundException::new);
@@ -111,7 +111,6 @@ public class OrderService {
         // Sort cart items by product ID to ensure deterministic locking and stock reduction
         finalCartItemList.sort(Comparator.comparing(item -> item.getProduct().getId()));
 
-        List<Product> lowStockProducts = new ArrayList<>();
         // Reduce stock for confirmed items
         for (CartItem cartItem : finalCartItemList) {
             Product product = productRepository.findByIdWithLock(cartItem.getProduct().getId())
@@ -120,13 +119,6 @@ public class OrderService {
             product.setAvailableQuantity(product.getAvailableQuantity() - cartItem.getQuantity());
             productRepository.save(product);
 
-            if (product.getAvailableQuantity() < 10) {
-                lowStockProducts.add(product);
-            }
-        }
-
-        if (!lowStockProducts.isEmpty()) {
-            mailService.sendLowStockReport(lowStockProducts);
         }
 
         // Now that stock is confirmed and reduced, create the order and order products
@@ -135,8 +127,6 @@ public class OrderService {
         order.setOrderDate(LocalDate.now());
         if (authenticatedUser.getRole().equals(Role.ADMIN)) {
             order.setStatus(OrderStatus.DONE);
-        } else {
-            order.setStatus(OrderStatus.PENDING);
         }
 
         order.setOrderNumber(generateUniqueOrderNumber());
@@ -152,7 +142,7 @@ public class OrderService {
         order.setPrice(totalLeva);
         order.setEuroPrice(totalEuro);
 
-        orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
 
         for (CartItem cartItem : finalCartItemList) {
             OrderProduct orderProduct = new OrderProduct();
@@ -166,8 +156,65 @@ public class OrderService {
             orderProductRepository.save(orderProduct);
         }
 
-        // Finally, delete the cart items
         cartItemRepository.deleteAll(cartItemRepository.findByShoppingCartAndDeletedFalse(shoppingCart));
+
+        return modelMapper.map(savedOrder, OrderDTO.class);
+    }
+
+    @Transactional
+    public void cancelOrder(UUID orderId) throws ChangeSetPersister.NotFoundException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        User authenticatedUser = userRepository.findByEmail(email).orElseThrow(ChangeSetPersister.NotFoundException::new);
+
+        ShoppingCart shoppingCart = shoppingCartRepository.findByUserAndDeletedFalse(authenticatedUser).orElseThrow(ChangeSetPersister.NotFoundException::new);
+
+        Order order = orderRepository.findByIdAndDeletedFalse(orderId).orElseThrow(ChangeSetPersister.NotFoundException::new);
+        List<OrderProduct> orderProducts = orderProductRepository.findAllByOrderAndDeletedFalse(order);
+
+
+        for (OrderProduct orderProduct : orderProducts) {
+            CartItem cartItem = new CartItem();
+            cartItem.setShoppingCart(shoppingCart);
+            cartItem.setProduct(orderProduct.getProduct());
+            cartItem.setPrice(orderProduct.getPrice());
+            cartItem.setEuroPrice(orderProduct.getEuroPrice());
+            cartItem.setQuantity(orderProduct.getQuantity());
+
+            cartItemRepository.save(cartItem);
+
+            Product product = orderProduct.getProduct();
+            product.setAvailableQuantity(product.getAvailableQuantity() + orderProduct.getQuantity());
+            productRepository.save(product);
+
+        }
+
+        orderProductRepository.deleteAll(orderProducts);
+        deleteOrder(order.getId());
+    }
+
+    @Transactional
+    public void orderPaySuccess(UUID orderId) throws ChangeSetPersister.NotFoundException, MessagingException {
+        Order order = orderRepository.findByIdAndDeletedFalse(orderId).orElseThrow(ChangeSetPersister.NotFoundException::new);
+        List<OrderProduct> orderProducts = orderProductRepository.findAllByOrderAndDeletedFalse(order);
+
+        List<Product> lowStockProducts = new ArrayList<>();
+
+        for (OrderProduct orderProduct : orderProducts) {
+            Product product = productRepository.findByIdWithLock(orderProduct.getProduct().getId())
+                    .orElseThrow(() -> new InsufficientStockException("Product not found: " + orderProduct.getProduct().getId()));
+
+            if (product.getAvailableQuantity() < 10) {
+                lowStockProducts.add(product);
+            }
+        }
+
+        if (!lowStockProducts.isEmpty()) {
+            mailService.sendLowStockReport(lowStockProducts);
+        }
+
+        order.setStatus(OrderStatus.PENDING);
+        orderRepository.save(order);
     }
 
 

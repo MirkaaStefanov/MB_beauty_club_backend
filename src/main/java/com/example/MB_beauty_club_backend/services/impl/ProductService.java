@@ -1,10 +1,14 @@
 package com.example.MB_beauty_club_backend.services.impl;
 
 import com.example.MB_beauty_club_backend.enums.ProductCategory;
+import com.example.MB_beauty_club_backend.models.dto.NeedProductDTO;
 import com.example.MB_beauty_club_backend.models.dto.ProductDTO;
+import com.example.MB_beauty_club_backend.models.dto.ServiceDTO;
 import com.example.MB_beauty_club_backend.models.entity.CartItem;
+import com.example.MB_beauty_club_backend.models.entity.NeedProduct;
 import com.example.MB_beauty_club_backend.models.entity.Product;
 import com.example.MB_beauty_club_backend.repositories.CartItemRepository;
+import com.example.MB_beauty_club_backend.repositories.NeedProductRepository;
 import com.example.MB_beauty_club_backend.repositories.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -16,6 +20,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,6 +30,7 @@ public class ProductService {
     private final ProductRepository repository;
     private final CartItemRepository cartItemRepository;
     private final ModelMapper mapper;
+    private final NeedProductRepository needProductRepository;
     private static final BigDecimal EURO_EXCHANGE_RATE = new BigDecimal("1.95583");
 
 
@@ -147,9 +153,31 @@ public class ProductService {
             throw new IllegalArgumentException("Quantity must be greater than 0");
         }
 
-        item.setAvailableQuantity(item.getAvailableQuantity() + quantity);
+        Optional<NeedProduct> optionalNeedProduct = needProductRepository.findByProduct(item);
+        if(optionalNeedProduct.isPresent()){
+            NeedProduct needProduct = optionalNeedProduct.get();
+            if(quantity<= needProduct.getQuantity()){
+                needProduct.setQuantity(needProduct.getQuantity()-quantity);
+                needProductRepository.save(needProduct);
+            }else{
+                int quantityForAdding = quantity-needProduct.getQuantity();
+                item.setAvailableQuantity(item.getAvailableQuantity() + quantityForAdding);
+                needProductRepository.delete(needProduct);
+            }
+
+        }else{
+            item.setAvailableQuantity(item.getAvailableQuantity() + quantity);
+        }
 
         return mapper.map(repository.save(item), ProductDTO.class);
     }
+
+    public List<NeedProductDTO> getAllNeedProducts(){
+        List<NeedProduct> needProducts = needProductRepository.findAll();
+        return needProducts.stream()
+                .map(needProduct -> mapper.map(needProduct, NeedProductDTO.class))
+                .collect(Collectors.toList());
+    }
+
 
 }

@@ -125,8 +125,9 @@ public class OrderService {
 
             if(product.getAvailableQuantity() - cartItem.getQuantity() < 0){
 
-                product.setAvailableQuantity(0);
+
                 Optional<NeedProduct> optionalNeedProduct = needProductRepository.findByProduct(product);
+
                 if(optionalNeedProduct.isPresent()){
                     int quantity = cartItem.getQuantity() - product.getAvailableQuantity();
                     NeedProduct needProduct = optionalNeedProduct.get();
@@ -138,6 +139,7 @@ public class OrderService {
                     needProduct.setQuantity(cartItem.getQuantity() - product.getAvailableQuantity());
                     needProductRepository.save(needProduct);
                 }
+                product.setAvailableQuantity(0);
             }else{
                 product.setAvailableQuantity(product.getAvailableQuantity() - cartItem.getQuantity());
             }

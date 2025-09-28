@@ -1,6 +1,7 @@
 package com.example.MB_beauty_club_backend.controllers;
 
 import com.example.MB_beauty_club_backend.enums.ProductCategory;
+import com.example.MB_beauty_club_backend.models.dto.NeedProductDTO;
 import com.example.MB_beauty_club_backend.models.dto.ProductDTO;
 import com.example.MB_beauty_club_backend.services.impl.DatabaseBackupService;
 import com.example.MB_beauty_club_backend.services.impl.MailService;
@@ -89,5 +90,11 @@ public class ProductController {
         mailService.sendDatabaseBackup(backupFile);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/need-products")
+    public ResponseEntity<List<NeedProductDTO>> getAllNeedProducts(@RequestHeader(value = "Authorization") String auth){
+        return ResponseEntity.ok(productService.getAllNeedProducts());
+    }
+
 
 }

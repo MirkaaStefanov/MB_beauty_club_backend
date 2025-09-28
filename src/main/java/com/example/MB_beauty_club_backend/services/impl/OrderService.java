@@ -156,33 +156,21 @@ public class OrderService {
             orderProductRepository.save(orderProduct);
         }
 
-        cartItemRepository.deleteAll(cartItemRepository.findByShoppingCartAndDeletedFalse(shoppingCart));
+        if(authenticatedUser.getRole().equals(Role.ADMIN)){
+            cartItemRepository.deleteAll(cartItemRepository.findByShoppingCartAndDeletedFalse(shoppingCart));
+        }
 
         return modelMapper.map(savedOrder, OrderDTO.class);
     }
 
     @Transactional
     public void cancelOrder(UUID orderId) throws ChangeSetPersister.NotFoundException {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        User authenticatedUser = userRepository.findByEmail(email).orElseThrow(ChangeSetPersister.NotFoundException::new);
-
-        ShoppingCart shoppingCart = shoppingCartRepository.findByUserAndDeletedFalse(authenticatedUser).orElseThrow(ChangeSetPersister.NotFoundException::new);
 
         Order order = orderRepository.findByIdAndDeletedFalse(orderId).orElseThrow(ChangeSetPersister.NotFoundException::new);
         List<OrderProduct> orderProducts = orderProductRepository.findAllByOrderAndDeletedFalse(order);
 
 
         for (OrderProduct orderProduct : orderProducts) {
-            CartItem cartItem = new CartItem();
-            cartItem.setShoppingCart(shoppingCart);
-            cartItem.setProduct(orderProduct.getProduct());
-            cartItem.setPrice(orderProduct.getPrice());
-            cartItem.setEuroPrice(orderProduct.getEuroPrice());
-            cartItem.setQuantity(orderProduct.getQuantity());
-
-            cartItemRepository.save(cartItem);
-
             Product product = orderProduct.getProduct();
             product.setAvailableQuantity(product.getAvailableQuantity() + orderProduct.getQuantity());
             productRepository.save(product);
@@ -195,6 +183,13 @@ public class OrderService {
 
     @Transactional
     public void orderPaySuccess(UUID orderId) throws ChangeSetPersister.NotFoundException, MessagingException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        User authenticatedUser = userRepository.findByEmail(email).orElseThrow(ChangeSetPersister.NotFoundException::new);
+
+        ShoppingCart shoppingCart = shoppingCartRepository.findByUserAndDeletedFalse(authenticatedUser).orElseThrow(ChangeSetPersister.NotFoundException::new);
+
+
         Order order = orderRepository.findByIdAndDeletedFalse(orderId).orElseThrow(ChangeSetPersister.NotFoundException::new);
         List<OrderProduct> orderProducts = orderProductRepository.findAllByOrderAndDeletedFalse(order);
 
@@ -213,6 +208,7 @@ public class OrderService {
             mailService.sendLowStockReport(lowStockProducts);
         }
 
+        cartItemRepository.deleteAll(cartItemRepository.findByShoppingCartAndDeletedFalse(shoppingCart));
         order.setStatus(OrderStatus.PENDING);
         orderRepository.save(order);
     }

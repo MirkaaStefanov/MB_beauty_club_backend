@@ -7,12 +7,14 @@ import com.example.MB_beauty_club_backend.models.dto.CartItemDTO;
 import com.example.MB_beauty_club_backend.models.dto.OrderDTO;
 import com.example.MB_beauty_club_backend.models.dto.OrderProductDTO;
 import com.example.MB_beauty_club_backend.models.entity.CartItem;
+import com.example.MB_beauty_club_backend.models.entity.NeedProduct;
 import com.example.MB_beauty_club_backend.models.entity.Order;
 import com.example.MB_beauty_club_backend.models.entity.OrderProduct;
 import com.example.MB_beauty_club_backend.models.entity.Product;
 import com.example.MB_beauty_club_backend.models.entity.ShoppingCart;
 import com.example.MB_beauty_club_backend.models.entity.User;
 import com.example.MB_beauty_club_backend.repositories.CartItemRepository;
+import com.example.MB_beauty_club_backend.repositories.NeedProductRepository;
 import com.example.MB_beauty_club_backend.repositories.OrderProductRepository;
 import com.example.MB_beauty_club_backend.repositories.OrderRepository;
 import com.example.MB_beauty_club_backend.repositories.ProductRepository;
@@ -34,6 +36,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 
@@ -50,6 +53,7 @@ public class OrderService {
     private final CartItemRepository cartItemRepository;
     private final ShoppingCartService shoppingCartService;
     private final MailService mailService;
+    private final NeedProductRepository needProductRepository;
 
     @Value("${spring.security.mail.admin}")
     private String adminEmail;
@@ -99,11 +103,13 @@ public class OrderService {
             throw new InsufficientStockException("Your shopping cart is empty.");
         }
 
-        // Validate and correct cart items in a separate transaction
-        String validationMessage = shoppingCartService.validateAndCorrectCartItems(cartItemList);
-        if (!validationMessage.isEmpty()) {
-            throw new InsufficientStockException(validationMessage);
-        }
+       if(!authenticatedUser.getRole().equals(Role.ADMIN)){
+           String validationMessage = shoppingCartService.validateAndCorrectCartItems(cartItemList);
+           if (!validationMessage.isEmpty()) {
+               throw new InsufficientStockException(validationMessage);
+           }
+       }
+
 
         // After validation, re-fetch the possibly modified cart items
         List<CartItem> finalCartItemList = cartItemRepository.findByShoppingCartAndDeletedFalse(shoppingCart);
@@ -116,7 +122,27 @@ public class OrderService {
             Product product = productRepository.findByIdWithLock(cartItem.getProduct().getId())
                     .orElseThrow(() -> new InsufficientStockException("Product not found: " + cartItem.getProduct().getId()));
 
-            product.setAvailableQuantity(product.getAvailableQuantity() - cartItem.getQuantity());
+
+            if(product.getAvailableQuantity() - cartItem.getQuantity() < 0){
+
+                product.setAvailableQuantity(0);
+                Optional<NeedProduct> optionalNeedProduct = needProductRepository.findByProduct(product);
+                if(optionalNeedProduct.isPresent()){
+                    int quantity = cartItem.getQuantity() - product.getAvailableQuantity();
+                    NeedProduct needProduct = optionalNeedProduct.get();
+                    needProduct.setQuantity(needProduct.getQuantity()+quantity);
+                    needProductRepository.save(needProduct);
+                }else{
+                    NeedProduct needProduct = new NeedProduct();
+                    needProduct.setProduct(product);
+                    needProduct.setQuantity(cartItem.getQuantity() - product.getAvailableQuantity());
+                    needProductRepository.save(needProduct);
+                }
+            }else{
+                product.setAvailableQuantity(product.getAvailableQuantity() - cartItem.getQuantity());
+            }
+
+
             productRepository.save(product);
 
         }

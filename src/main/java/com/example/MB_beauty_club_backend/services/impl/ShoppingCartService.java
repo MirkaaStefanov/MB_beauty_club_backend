@@ -1,5 +1,6 @@
 package com.example.MB_beauty_club_backend.services.impl;
 
+import com.example.MB_beauty_club_backend.enums.Role;
 import com.example.MB_beauty_club_backend.exceptions.InsufficientStockException;
 import com.example.MB_beauty_club_backend.models.dto.CartItemDTO;
 import com.example.MB_beauty_club_backend.models.entity.CartItem;
@@ -71,10 +72,10 @@ public class ShoppingCartService {
                 throw new InsufficientStockException("Количеството трябва да е повече 0");
             }
             cartItem.setQuantity(quantity);
-            if(product.isPromotion()){
+            if (product.isPromotion()) {
                 cartItem.setPrice(product.getPromotionPrice());
                 cartItem.setEuroPrice(product.getPromotionEuroPrice());
-            }else{
+            } else {
                 cartItem.setPrice(product.getPrice());
                 cartItem.setEuroPrice(product.getEuroPrice());
             }
@@ -101,29 +102,23 @@ public class ShoppingCartService {
 
         if (optionalCartItem.isPresent()) {
             CartItem cartItem = optionalCartItem.get();
-            if (cartItem.getQuantity() + quantity > product.getAvailableQuantity()) {
-                throw new InsufficientStockException("Няма толкова количество в наличност");
-            } else {
-                cartItem.setQuantity(cartItem.getQuantity() + quantity);
-                cartItemRepository.save(cartItem);
-                ifProductIsInCart = true;
-            }
+            cartItem.setQuantity(cartItem.getQuantity() + quantity);
+            cartItemRepository.save(cartItem);
+            ifProductIsInCart = true;
+
         }
 
         if (ifProductIsInCart == false) {
-            if (quantity > product.getAvailableQuantity()) {
-                throw new InsufficientStockException("Няма толкова количество в наличност");
-            }
             CartItem cartItem = new CartItem();
             cartItem.setProduct(product);
             if (cartItem.getQuantity() < 0) {
                 throw new InsufficientStockException("Количеството трябва да е повече 0");
             }
             cartItem.setQuantity(quantity);
-            if(product.isPromotion()){
+            if (product.isPromotion()) {
                 cartItem.setPrice(product.getPromotionPrice());
                 cartItem.setEuroPrice(product.getPromotionEuroPrice());
-            }else{
+            } else {
                 cartItem.setPrice(product.getPrice());
                 cartItem.setEuroPrice(product.getEuroPrice());
             }
@@ -163,13 +158,21 @@ public class ShoppingCartService {
     }
 
     public void updateQuantityOfItem(Long cartItemId, int quantity) throws ChangeSetPersister.NotFoundException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        User authenticatedUser = userRepository.findByEmail(email).orElseThrow(ChangeSetPersister.NotFoundException::new);
+
         if (quantity <= 0) {
             throw new InsufficientStockException("Количеството трябва да е повече 0");
         }
         CartItem cartItem = cartItemRepository.findByIdAndDeletedFalse(cartItemId).orElseThrow(ChangeSetPersister.NotFoundException::new);
-        if (quantity > cartItem.getProduct().getAvailableQuantity()) {
-            throw new InsufficientStockException("Няма толкова количество в наличност");
+
+        if(!authenticatedUser.getRole().equals(Role.ADMIN)){
+            if (quantity > cartItem.getProduct().getAvailableQuantity()) {
+                throw new InsufficientStockException("Няма толкова количество в наличност");
+            }
         }
+
         cartItem.setQuantity(quantity);
         cartItemRepository.save(cartItem);
     }
@@ -188,7 +191,7 @@ public class ShoppingCartService {
                 } else {
                     cartItem.setQuantity(product.getAvailableQuantity());
                     cartItemRepository.save(cartItem);
-                    adjustmentMessages.add("Количеството за '" + product.getName() + "' беше намалено на: " + product.getAvailableQuantity()+" поради намалена наличност");
+                    adjustmentMessages.add("Количеството за '" + product.getName() + "' беше намалено на: " + product.getAvailableQuantity() + " поради намалена наличност");
                 }
             }
         }

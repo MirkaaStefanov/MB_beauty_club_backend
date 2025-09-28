@@ -31,7 +31,10 @@ public class Product {
     private Long id;
     @Min(value = 1, message = "Цената не може да бъде отрицателно число!")
     private BigDecimal price;
+    @Min(value = 1, message = "Цената не може да бъде отрицателно число!")
     private BigDecimal euroPrice;
+    @Min(value = 1, message = "Цената не може да бъде отрицателно число!")
+    private BigDecimal comingPrice;
     @Column(name = "available_quantity")
     @Min(value = 0, message = "Наличните бройки не могат да бъдат отрицателно число!")
     private int availableQuantity;

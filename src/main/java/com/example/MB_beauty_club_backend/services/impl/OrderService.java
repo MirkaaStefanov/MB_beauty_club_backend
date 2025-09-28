@@ -103,12 +103,12 @@ public class OrderService {
             throw new InsufficientStockException("Your shopping cart is empty.");
         }
 
-       if(!authenticatedUser.getRole().equals(Role.ADMIN)){
-           String validationMessage = shoppingCartService.validateAndCorrectCartItems(cartItemList);
-           if (!validationMessage.isEmpty()) {
-               throw new InsufficientStockException(validationMessage);
-           }
-       }
+        if (!authenticatedUser.getRole().equals(Role.ADMIN)) {
+            String validationMessage = shoppingCartService.validateAndCorrectCartItems(cartItemList);
+            if (!validationMessage.isEmpty()) {
+                throw new InsufficientStockException(validationMessage);
+            }
+        }
 
 
         // After validation, re-fetch the possibly modified cart items
@@ -117,36 +117,46 @@ public class OrderService {
         // Sort cart items by product ID to ensure deterministic locking and stock reduction
         finalCartItemList.sort(Comparator.comparing(item -> item.getProduct().getId()));
 
-        // Reduce stock for confirmed items
+        List<Product> lowStockProducts = new ArrayList<>();
+
         for (CartItem cartItem : finalCartItemList) {
             Product product = productRepository.findByIdWithLock(cartItem.getProduct().getId())
                     .orElseThrow(() -> new InsufficientStockException("Product not found: " + cartItem.getProduct().getId()));
 
+            if (product.getAvailableQuantity() < 10) {
+                lowStockProducts.add(product);
+            }
 
-            if(product.getAvailableQuantity() - cartItem.getQuantity() < 0){
 
+            if (product.getAvailableQuantity() - cartItem.getQuantity() < 0) {
 
                 Optional<NeedProduct> optionalNeedProduct = needProductRepository.findByProduct(product);
 
-                if(optionalNeedProduct.isPresent()){
+                if (optionalNeedProduct.isPresent()) {
                     int quantity = cartItem.getQuantity() - product.getAvailableQuantity();
                     NeedProduct needProduct = optionalNeedProduct.get();
-                    needProduct.setQuantity(needProduct.getQuantity()+quantity);
+                    needProduct.setQuantity(needProduct.getQuantity() + quantity);
                     needProductRepository.save(needProduct);
-                }else{
+                } else {
                     NeedProduct needProduct = new NeedProduct();
                     needProduct.setProduct(product);
                     needProduct.setQuantity(cartItem.getQuantity() - product.getAvailableQuantity());
                     needProductRepository.save(needProduct);
                 }
                 product.setAvailableQuantity(0);
-            }else{
+            } else {
                 product.setAvailableQuantity(product.getAvailableQuantity() - cartItem.getQuantity());
             }
 
 
             productRepository.save(product);
 
+        }
+
+        if(authenticatedUser.getRole().equals(Role.ADMIN)){
+            if (!lowStockProducts.isEmpty()) {
+                mailService.sendLowStockReport(lowStockProducts);
+            }
         }
 
         // Now that stock is confirmed and reduced, create the order and order products
@@ -184,7 +194,7 @@ public class OrderService {
             orderProductRepository.save(orderProduct);
         }
 
-        if(authenticatedUser.getRole().equals(Role.ADMIN)){
+        if (authenticatedUser.getRole().equals(Role.ADMIN)) {
             cartItemRepository.deleteAll(cartItemRepository.findByShoppingCartAndDeletedFalse(shoppingCart));
         }
 

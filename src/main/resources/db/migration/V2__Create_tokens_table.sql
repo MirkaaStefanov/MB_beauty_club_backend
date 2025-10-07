@@ -1,0 +1,9 @@
+-- V2__Create_tokens_table.sql
+CREATE TABLE tokens (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    token VARCHAR(512) UNIQUE,
+    token_type VARCHAR(50) NOT NULL,
+    revoked BOOLEAN NOT NULL DEFAULT FALSE,
+    expired BOOLEAN NOT NULL DEFAULT FALSE,
+    user_id BIGINT NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

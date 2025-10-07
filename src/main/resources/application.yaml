@@ -20,6 +20,11 @@ spring:
     username: ${MYSQLUSER}
     password: ${MYSQLPASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
   jpa:
     generate-ddl: false
     hibernate:
@@ -67,3 +72,4 @@ application:
 stripe:
   secret-key: ${STRIPE_SECRET_KEY}
   public-key: ${STRIPE_PUBLIC_KEY}
+

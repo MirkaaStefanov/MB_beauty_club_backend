@@ -1,6 +1,6 @@
 -- V1__Create_users_table.sql
 CREATE TABLE users (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BINARY(16) PRIMARY KEY,
     name VARCHAR(255),
     surname VARCHAR(255),
     email VARCHAR(255) NOT NULL UNIQUE,

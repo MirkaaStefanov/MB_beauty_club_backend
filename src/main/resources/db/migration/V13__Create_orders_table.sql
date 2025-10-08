@@ -1,7 +1,7 @@
 -- V13__Create_orders_table.sql
 CREATE TABLE orders (
     id BINARY(16) PRIMARY KEY,
-    user_id BIGINT,
+    user_id BINARY(16),
     order_date DATE,
     is_deleted BOOLEAN DEFAULT FALSE,
     is_invoiced BOOLEAN DEFAULT FALSE,

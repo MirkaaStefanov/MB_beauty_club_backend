@@ -4,7 +4,7 @@ CREATE TABLE order_products (
     quantity INT,
     product_id BIGINT,
     order_id BINARY(16),
-    user_id BIGINT,
+    user_id BINARY(16),
     is_deleted BOOLEAN DEFAULT FALSE,
     price DECIMAL(19, 2),
     euro_price DECIMAL(19, 2)

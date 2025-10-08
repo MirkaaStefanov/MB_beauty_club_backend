@@ -2,7 +2,7 @@
 CREATE TABLE appointments (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     worker_id BINARY(16),
-    user_id BIGINT,
+    user_id BINARY(16),
     username VARCHAR(255),
     phone_number VARCHAR(50),
     service_id BINARY(16),

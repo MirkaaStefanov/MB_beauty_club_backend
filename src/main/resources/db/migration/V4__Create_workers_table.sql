@@ -1,7 +1,7 @@
 -- V4__Create_workers_table.sql
 CREATE TABLE workers (
     id BINARY(16) PRIMARY KEY,
-    user_id BIGINT,
+    user_id BINARY(16),
     name VARCHAR(255),
     email VARCHAR(255),
     worker_category VARCHAR(50),

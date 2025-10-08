@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -18,6 +19,9 @@ import java.util.UUID;
 public abstract class BaseEntity {
 
     @Id
+    @GeneratedValue(generator = "UUID") // 1. Tells JPA to use a custom generator
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator") // 2. Defines the generator as Hibernate's UUID generator
+    @Column(name = "id", columnDefinition = "BINARY(16)")
     private UUID id;
 
     @Column(name = "created_at", nullable = false, updatable = false)

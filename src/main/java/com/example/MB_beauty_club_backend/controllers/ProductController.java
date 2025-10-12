@@ -86,9 +86,9 @@ public class ProductController {
     @PostMapping("/export-database")
     public ResponseEntity<Void> exportDatabase(@RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException, IOException, InterruptedException, MessagingException {
 
-//        File backupFile = databaseBackupService.exportDatabase();
-//        mailService.sendDatabaseBackup(backupFile); original
-        mailService.sendDatabaseBackup();
+        File backupFile = databaseBackupService.exportDatabase();
+        mailService.sendDatabaseBackup(backupFile);
+
         return ResponseEntity.noContent().build();
     }
 

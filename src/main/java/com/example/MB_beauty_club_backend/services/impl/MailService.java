@@ -73,41 +73,26 @@ public class MailService {
         mailSender.send(mimeMessage);
     }
 
-//    public void sendDatabaseBackup(File backupFile) throws MessagingException {
-//        MimeMessage mimeMessage = mailSender.createMimeMessage();
-//        // Set 'multipart' to true because we are adding an attachment
-//        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-//
-//        helper.setTo(adminEmail);
-//        helper.setSubject("💾 Ежедневен бекъп на база данни: " + backupFile.getName());
-//
-//        String htmlContent = "<h2>Ежедневен бекъп на база данни</h2>" +
-//                "<p>Прикаченият файл съдържа пълния SQL бекъп на базата данни.</p>" +
-//                "<p>Дата: " + java.time.LocalDate.now() + "</p>";
-//        helper.setText(htmlContent, true);
-//
-//        // Attach the file
-//        FileSystemResource file = new FileSystemResource(backupFile);
-//        helper.addAttachment(backupFile.getName(), file);
-//
-//        mailSender.send(mimeMessage);
-//    }
-
-    public void sendDatabaseBackup() throws MessagingException {
+    public void sendDatabaseBackup(File backupFile) throws MessagingException {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         // Set 'multipart' to true because we are adding an attachment
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
 
         helper.setTo(adminEmail);
-        helper.setSubject("💾 Ежедневен бекъп на база данни: ");
+        helper.setSubject("💾 Ежедневен бекъп на база данни: " + backupFile.getName());
 
         String htmlContent = "<h2>Ежедневен бекъп на база данни</h2>" +
                 "<p>Прикаченият файл съдържа пълния SQL бекъп на базата данни.</p>" +
                 "<p>Дата: " + java.time.LocalDate.now() + "</p>";
         helper.setText(htmlContent, true);
 
+        // Attach the file
+        FileSystemResource file = new FileSystemResource(backupFile);
+        helper.addAttachment(backupFile.getName(), file);
 
         mailSender.send(mimeMessage);
     }
+
+
 
 }

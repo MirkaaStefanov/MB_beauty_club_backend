@@ -57,8 +57,6 @@ spring:
             protocol: smtps
           smtps:
             auth: true
-            starttls:
-              enable: true
             timeout: 8000
 application:
   upload:

@@ -8,6 +8,7 @@ server:
     forgottenPasswordUrl: ${server.frontend.baseUrl}/forgotten-password
   backend:
     baseUrl: ${BACKEND_URL}
+
 spring:
   config:
     import: "classpath:rate-limiter.yaml"
@@ -44,26 +45,23 @@ spring:
           introspection-uri: https://www.googleapis.com
           client-id: ${GOOGLE_CLIENT_ID}
           client-secret: ${GOOGLE_CLIENT_SECRET}
-    mail:
-      host: smtp.gmail.com
-      port: 465
-      protocol: smtps
-      username: ${GMAIL_USERNAME}
-      password: ${GMAIL_PASSWORD}
-      admin: ${GMAIL_USERNAME}
-      properties:
-        mail:
-          transport:
-            protocol: smtps
-          smtps:
-            auth: true
-            starttls:
-              enable: true
-            timeout: 8000
+
+  # --- CORRECTED MAIL CONFIGURATION ---
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${GMAIL_USERNAME}
+    password: ${GMAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 application:
   upload:
     directory: server/src/main/resources/static/uploads/
-  # --- NEW DATABASE BACKUP CONFIGURATION ---
   backup:
     mysqldump-path: /Applications/XAMPP/xamppfiles/bin/mysqldump
     output-dir: /tmp/db_backups
@@ -72,4 +70,3 @@ application:
 stripe:
   secret-key: ${STRIPE_SECRET_KEY}
   public-key: ${STRIPE_PUBLIC_KEY}
-

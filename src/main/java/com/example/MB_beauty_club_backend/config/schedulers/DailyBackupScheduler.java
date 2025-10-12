@@ -51,5 +51,4 @@ public class DailyBackupScheduler {
             log.error("Database export failed: {}", e.getMessage());
         }
     }
-
 }

@@ -52,7 +52,7 @@ public class RegistrationListener implements ApplicationListener<OnRegistrationC
         String subject = "The Sample Project Registration Confirmation";
         Email to = new Email(user.getEmail());
 
-        String confirmationUrl = event.getAppUrl() + "auth/registrationConfirm?token=" + token;
+        String confirmationUrl = event.getAppUrl() + "/auth/registrationConfirm?token=" + token;
         String messageContent = "Dear, " + user.getName() + "\n\n"
                 + "Thank you for registering with The Sample Project!\n\n"
                 + "To complete your registration, please click the following link to verify your email:\n"

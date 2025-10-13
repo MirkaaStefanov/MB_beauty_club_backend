@@ -15,9 +15,12 @@ import com.example.MB_beauty_club_backend.models.entity.User;
 import com.example.MB_beauty_club_backend.repositories.ShoppingCartRepository;
 import com.example.MB_beauty_club_backend.repositories.UserRepository;
 import com.example.MB_beauty_club_backend.services.UserService;
+import com.example.MB_beauty_club_backend.services.impl.security.events.OnRegistrationCompleteEvent;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -33,6 +36,10 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final ShoppingCartRepository shoppingCartRepository;
+    private final ApplicationEventPublisher eventPublisher;
+
+    @Value("${server.backend.baseUrl}")
+    private String appBaseUrl;
 
     /**
      * Creates a new user based on the provided registration request.
@@ -153,6 +160,7 @@ public class UserServiceImpl implements UserService {
             }
 
             user = userRepository.save(buildUser(registerRequest));
+            eventPublisher.publishEvent(new OnRegistrationCompleteEvent(user, appBaseUrl));
             ShoppingCart shoppingCart = new ShoppingCart();
             shoppingCart.setUser(user);
             shoppingCartRepository.save(shoppingCart);

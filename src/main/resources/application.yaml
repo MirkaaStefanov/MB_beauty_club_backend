@@ -44,22 +44,10 @@ spring:
           introspection-uri: https://www.googleapis.com
           client-id: ${GOOGLE_CLIENT_ID}
           client-secret: ${GOOGLE_CLIENT_SECRET}
-    mail:
-      host: smtp.gmail.com
-      port: 465
-      protocol: smtps
-      username: ${GMAIL_USERNAME}
-      password: ${GMAIL_PASSWORD}
-      admin: ${GMAIL_USERNAME}
-      properties:
-        mail:
-          transport:
-            protocol: smtps
-          smtps:
-            auth: true
-            starttls:
-              enable: true
-            timeout: 8000
+sendgrid:
+  api-key: ${SENDGRID_API_KEY}
+  from-email: ${SENDGRID_FROM_EMAIL}
+  admin-email: ${ADMIN_EMAIL}
 application:
   upload:
     directory: server/src/main/resources/static/uploads/

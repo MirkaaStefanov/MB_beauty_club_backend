@@ -2,7 +2,6 @@ package com.example.MB_beauty_club_backend.config.schedulers;
 
 import com.example.MB_beauty_club_backend.services.impl.DatabaseBackupService;
 import com.example.MB_beauty_club_backend.services.impl.MailService;
-import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.ComponentScan;
@@ -45,8 +44,6 @@ public class DailyBackupScheduler {
         } catch (InterruptedException e) {
             log.error("Database backup process was interrupted: {}", e.getMessage());
             Thread.currentThread().interrupt(); // Restore the interrupted status
-        } catch (MessagingException e) {
-            log.error("Failed to send database backup email: {}", e.getMessage());
         } catch (RuntimeException e) {
             log.error("Database export failed: {}", e.getMessage());
         }

@@ -20,7 +20,6 @@ import com.example.MB_beauty_club_backend.repositories.OrderRepository;
 import com.example.MB_beauty_club_backend.repositories.ProductRepository;
 import com.example.MB_beauty_club_backend.repositories.ShoppingCartRepository;
 import com.example.MB_beauty_club_backend.repositories.UserRepository;
-import jakarta.mail.MessagingException;
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -55,7 +54,7 @@ public class OrderService {
     private final MailService mailService;
     private final NeedProductRepository needProductRepository;
 
-    @Value("${spring.security.mail.admin}")
+    @Value("${sendgrid.admin-email}")
     private String adminEmail;
 
     public List<OrderDTO> getAllOrders() {
@@ -91,7 +90,7 @@ public class OrderService {
 
 
     @Transactional
-    public OrderDTO createOrder() throws InsufficientStockException, ChangeSetPersister.NotFoundException, MessagingException {
+    public OrderDTO createOrder() throws InsufficientStockException, ChangeSetPersister.NotFoundException{
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         User authenticatedUser = userRepository.findByEmail(email).orElseThrow(ChangeSetPersister.NotFoundException::new);
@@ -220,7 +219,7 @@ public class OrderService {
     }
 
     @Transactional
-    public void orderPaySuccess(UUID orderId) throws ChangeSetPersister.NotFoundException, MessagingException {
+    public void orderPaySuccess(UUID orderId) throws ChangeSetPersister.NotFoundException{
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         User authenticatedUser = userRepository.findByEmail(email).orElseThrow(ChangeSetPersister.NotFoundException::new);

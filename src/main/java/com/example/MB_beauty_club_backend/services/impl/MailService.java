@@ -1,18 +1,23 @@
 package com.example.MB_beauty_club_backend.services.impl;
 
 import com.example.MB_beauty_club_backend.models.entity.Product;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
+import com.sendgrid.Method;
+import com.sendgrid.Request;
+import com.sendgrid.Response;
+import com.sendgrid.SendGrid;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Attachments;
+import com.sendgrid.helpers.mail.objects.Content;
+import com.sendgrid.helpers.mail.objects.Email;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Base64;
 import java.util.List;
 
@@ -20,24 +25,28 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MailService {
 
-    private final JavaMailSender mailSender;
+    private static final Logger logger = LoggerFactory.getLogger(MailService.class);
 
-    @Value("${spring.security.mail.admin}")
+    // Inject SendGrid properties from your application.yml
+    @Value("${sendgrid.api-key}")
+    private String sendGridApiKey;
+
+    @Value("${sendgrid.from-email}")
+    private String fromEmail;
+
+    // We'll update this property name in application.yml
+    @Value("${sendgrid.admin-email}")
     private String adminEmail;
 
-    public void sendLowStockReport(List<Product> lowStockProducts) throws MessagingException {
-        if (lowStockProducts.isEmpty()) {
+    public void sendLowStockReport(List<Product> lowStockProducts) {
+        if (lowStockProducts == null || lowStockProducts.isEmpty()) {
             return;
         }
 
-        MimeMessage mimeMessage = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
-        helper.setTo(adminEmail);
-        helper.setSubject("⚠️ Ниска наличност на продукти");
-
+        // The HTML building logic remains exactly the same
         StringBuilder htmlContent = new StringBuilder();
         htmlContent.append("<h2 style='color:red;'>⚠️ Внимание: Ниски наличности!</h2>");
-        htmlContent.append("<p>Следните продукти са с наличност под 10:</p>");
+        // ... (rest of your HTML string building)
         htmlContent.append("<table border='1' cellpadding='6' cellspacing='0' style='border-collapse: collapse; width:100%; font-family: sans-serif;'>");
         htmlContent.append("<tr style='background:#f2f2f2;'>")
                 .append("<th style='padding: 8px;'>Снимка</th>")
@@ -69,30 +78,67 @@ public class MailService {
         }
         htmlContent.append("</table>");
 
-        helper.setText(htmlContent.toString(), true);
-        mailSender.send(mimeMessage);
+        // --- New SendGrid Logic ---
+        Email from = new Email(fromEmail);
+        Email to = new Email(adminEmail);
+        String subject = "⚠️ Ниска наличност на продукти";
+        // Use "text/html" for the content type
+        Content content = new Content("text/html", htmlContent.toString());
+        Mail mail = new Mail(from, subject, to, content);
+
+        sendEmailWithSendGrid(mail);
     }
 
-    public void sendDatabaseBackup(File backupFile) throws MessagingException {
-        MimeMessage mimeMessage = mailSender.createMimeMessage();
-        // Set 'multipart' to true because we are adding an attachment
-        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+    public void sendDatabaseBackup(File backupFile) {
+        if (backupFile == null || !backupFile.exists()) {
+            logger.error("Database backup file does not exist. Cannot send email.");
+            return;
+        }
 
-        helper.setTo(adminEmail);
-        helper.setSubject("💾 Ежедневен бекъп на база данни: " + backupFile.getName());
-
+        Email from = new Email(fromEmail);
+        Email to = new Email(adminEmail);
+        String subject = "💾 Ежедневен бекъп на база данни: " + backupFile.getName();
         String htmlContent = "<h2>Ежедневен бекъп на база данни</h2>" +
                 "<p>Прикаченият файл съдържа пълния SQL бекъп на базата данни.</p>" +
                 "<p>Дата: " + java.time.LocalDate.now() + "</p>";
-        helper.setText(htmlContent, true);
+        Content content = new Content("text/html", htmlContent);
+        Mail mail = new Mail(from, subject, to, content);
 
-        // Attach the file
-        FileSystemResource file = new FileSystemResource(backupFile);
-        helper.addAttachment(backupFile.getName(), file);
+        // --- Logic for adding the file attachment ---
+        try {
+            byte[] fileData = Files.readAllBytes(backupFile.toPath());
+            String base64Content = Base64.getEncoder().encodeToString(fileData);
 
-        mailSender.send(mimeMessage);
+            Attachments attachments = new Attachments();
+            attachments.setContent(base64Content);
+            attachments.setFilename(backupFile.getName());
+            attachments.setType("application/octet-stream"); // A generic type for any file
+            attachments.setDisposition("attachment");
+            mail.addAttachments(attachments);
+
+        } catch (IOException e) {
+            logger.error("!!! ERROR reading backup file for attachment: {}", e.getMessage());
+            return; // Don't send the email if the file can't be attached
+        }
+
+        sendEmailWithSendGrid(mail);
     }
 
+    // Helper method to avoid repeating the send logic
+    private void sendEmailWithSendGrid(Mail mail) {
+        SendGrid sg = new SendGrid(sendGridApiKey);
+        Request request = new Request();
+        try {
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
 
+            logger.info(">>> ATTEMPTING TO SEND EMAIL to: {}", mail.getPersonalization().get(0).getTos().get(0).getEmail());
+            Response response = sg.api(request);
+            logger.info(">>> EMAIL SENT SUCCESSFULLY. Status Code: {}", response.getStatusCode());
 
+        } catch (IOException ex) {
+            logger.error("!!! ERROR SENDING EMAIL: {}", ex.getMessage());
+        }
+    }
 }

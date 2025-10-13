@@ -6,7 +6,6 @@ import com.example.MB_beauty_club_backend.models.dto.ProductDTO;
 import com.example.MB_beauty_club_backend.services.impl.DatabaseBackupService;
 import com.example.MB_beauty_club_backend.services.impl.MailService;
 import com.example.MB_beauty_club_backend.services.impl.ProductService;
-import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.ResponseEntity;
@@ -84,7 +83,7 @@ public class ProductController {
     }
 
     @PostMapping("/export-database")
-    public ResponseEntity<Void> exportDatabase(@RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException, IOException, InterruptedException, MessagingException {
+    public ResponseEntity<Void> exportDatabase(@RequestHeader(value = "Authorization", required = false) String auth) throws ChangeSetPersister.NotFoundException, IOException, InterruptedException{
 
         File backupFile = databaseBackupService.exportDatabase();
         mailService.sendDatabaseBackup(backupFile);

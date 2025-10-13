@@ -46,7 +46,7 @@ spring:
           client-secret: ${GOOGLE_CLIENT_SECRET}
     mail:
       host: smtp.gmail.com
-      port: 465
+      port: 587
       protocol: smtps
       username: ${GMAIL_USERNAME}
       password: ${GMAIL_PASSWORD}

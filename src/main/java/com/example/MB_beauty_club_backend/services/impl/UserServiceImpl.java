@@ -186,6 +186,7 @@ public class UserServiceImpl implements UserService {
                 .builder()
                 .name(request.getName())
                 .email(request.getEmail())
+                .phoneNumber(request.getPhoneNumber())
                 .provider(request.getProvider())
                 .role(Role.USER);
 

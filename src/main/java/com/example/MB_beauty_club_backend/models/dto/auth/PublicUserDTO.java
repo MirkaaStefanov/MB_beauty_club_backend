@@ -16,4 +16,6 @@ public class PublicUserDTO {
     private String surname;
     private String email;
     private Role role;
+    private String phoneNumber;
+
 }

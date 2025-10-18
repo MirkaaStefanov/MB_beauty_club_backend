@@ -60,7 +60,7 @@ public class AuthenticationController {
     @RateLimiter(name = "sensitive_operations_rate_limiter")
     public ResponseEntity<String> confirmRegistration(@RequestParam("token") String token, HttpServletResponse httpServletResponse) throws IOException {
         authenticationService.confirmRegistration(token);
-        httpServletResponse.sendRedirect(frontendConfig.getLoginUrl());
+        httpServletResponse.sendRedirect("/");
         return ResponseEntity.ok("User registration confirmed successfully!");
     }
 

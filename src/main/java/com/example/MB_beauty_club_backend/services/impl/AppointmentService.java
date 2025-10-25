@@ -34,6 +34,7 @@ public class AppointmentService {
     private final UserRepository userRepository;
     private final ServiceRepository serviceRepository;
     private final ModelMapper modelMapper;
+    private final TelegramNotificationService telegramService;
 
     private User getAuthenticatedUser() throws ChangeSetPersister.NotFoundException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -73,6 +74,26 @@ public class AppointmentService {
         appointment.setEndTime(appointment.getStartTime().plusMinutes(service.getDuration()));
 
         Appointment savedAppointment = appointmentRepository.save(appointment);
+
+        try {
+            String orderDetails = String.format(
+                    // Remove the \n and replace with spaces. I added an extra space for readability.
+                    "🗓️ New Appointment Created!  Client: %s  Worker: %s  Service: %s  Time: %s",
+                    savedAppointment.getUser().getUsername(),
+                    savedAppointment.getWorker().getName(),
+                    savedAppointment.getService().getName(),
+                    savedAppointment.getStartTime().toString() // This produces "2025-10-26T11:00"
+            );
+
+            // 2. Call your service
+            telegramService.sendNewOrderNotification(orderDetails);
+
+        } catch (Exception e) {
+            // IMPORTANT: Only log the error.
+            // Do NOT throw the exception here, or the entire appointment will fail
+            // just because the Telegram message failed.
+            System.err.println("Failed to send Telegram notification: " + e.getMessage());
+        }
 
         return modelMapper.map(savedAppointment, AppointmentDTO.class);
     }

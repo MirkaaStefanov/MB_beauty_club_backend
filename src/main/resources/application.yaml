@@ -60,3 +60,9 @@ application:
 stripe:
   secret-key: ${STRIPE_SECRET_KEY}
   public-key: ${STRIPE_PUBLIC_KEY}
+
+telegram:
+  bot:
+    token: ${TELEGRAM_BOT_TOKEN}
+  chat:
+    id: ${TELEGRAM_CHAT_ID}
